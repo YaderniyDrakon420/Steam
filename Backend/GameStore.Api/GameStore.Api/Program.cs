@@ -23,8 +23,17 @@ namespace GameStore.Api
 
             builder.Services.AddScoped<IGameRepository, GameRepository>();
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowReact", policy =>
+                {
+                    policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+                });
+            });
 
             var app = builder.Build();
+
+            app.UseCors("AllowReact");
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

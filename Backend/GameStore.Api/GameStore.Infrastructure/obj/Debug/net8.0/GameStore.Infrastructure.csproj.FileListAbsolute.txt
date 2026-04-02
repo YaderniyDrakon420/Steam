@@ -17,3 +17,23 @@ C:\Users\Admin\Desktop\ASP.NET Core\GameStore.Api\GameStore.Infrastructure\obj\D
 C:\Users\Admin\Desktop\ASP.NET Core\GameStore.Api\GameStore.Infrastructure\obj\Debug\net8.0\GameStore.Infrastructure.pdb
 C:\Users\Admin\Desktop\ASP.NET Core\GameStore.Api\GameStore.Infrastructure\obj\Debug\net8.0\GameStore.Infrastructure.genruntimeconfig.cache
 C:\Users\Admin\Desktop\ASP.NET Core\GameStore.Api\GameStore.Infrastructure\obj\Debug\net8.0\ref\GameStore.Infrastructure.dll
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Infrastructure\bin\Debug\net8.0\GameStore.Infrastructure.deps.json
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Infrastructure\bin\Debug\net8.0\GameStore.Infrastructure.runtimeconfig.json
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Infrastructure\bin\Debug\net8.0\GameStore.Infrastructure.dll
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Infrastructure\bin\Debug\net8.0\GameStore.Infrastructure.pdb
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Infrastructure\bin\Debug\net8.0\GameStore.Application.dll
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Infrastructure\bin\Debug\net8.0\GameStore.Domain.dll
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Infrastructure\bin\Debug\net8.0\GameStore.Application.pdb
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Infrastructure\bin\Debug\net8.0\GameStore.Domain.pdb
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Infrastructure\obj\Debug\net8.0\GameStore.Infrastructure.csproj.AssemblyReference.cache
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Infrastructure\obj\Debug\net8.0\GameStore.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Infrastructure\obj\Debug\net8.0\GameStore.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Infrastructure\obj\Debug\net8.0\GameStore.Infrastructure.AssemblyInfo.cs
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Infrastructure\obj\Debug\net8.0\GameStore.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Infrastructure\obj\Debug\net8.0\GameStore.Infrastructure.sourcelink.json
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Infrastructure\obj\Debug\net8.0\GameStor.B033DC11.Up2Date
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Infrastructure\obj\Debug\net8.0\GameStore.Infrastructure.dll
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Infrastructure\obj\Debug\net8.0\refint\GameStore.Infrastructure.dll
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Infrastructure\obj\Debug\net8.0\GameStore.Infrastructure.pdb
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Infrastructure\obj\Debug\net8.0\GameStore.Infrastructure.genruntimeconfig.cache
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Infrastructure\obj\Debug\net8.0\ref\GameStore.Infrastructure.dll

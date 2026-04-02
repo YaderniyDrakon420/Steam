@@ -8,6 +8,7 @@ public class GameStoreDbContext : DbContext
     public GameStoreDbContext(DbContextOptions<GameStoreDbContext> options) : base(options) { }
 
     public DbSet<Game> Games { get; set; }
+    public DbSet<User> Users { get; set; }
     public DbSet<Achievement> Achievements { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -16,5 +17,7 @@ public class GameStoreDbContext : DbContext
             .HasOne(a => a.Game)
             .WithMany(g => g.Achievements)
             .HasForeignKey(a => a.GameId);
+
+        modelBuilder.Entity<User>().ToTable("Users");
     }
 }

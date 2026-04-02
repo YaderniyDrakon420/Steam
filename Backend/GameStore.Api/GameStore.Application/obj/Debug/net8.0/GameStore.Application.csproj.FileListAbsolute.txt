@@ -13,3 +13,19 @@ C:\Users\Admin\Desktop\ASP.NET Core\GameStore.Api\GameStore.Application\obj\Debu
 C:\Users\Admin\Desktop\ASP.NET Core\GameStore.Api\GameStore.Application\obj\Debug\net8.0\refint\GameStore.Application.dll
 C:\Users\Admin\Desktop\ASP.NET Core\GameStore.Api\GameStore.Application\obj\Debug\net8.0\GameStore.Application.pdb
 C:\Users\Admin\Desktop\ASP.NET Core\GameStore.Api\GameStore.Application\obj\Debug\net8.0\ref\GameStore.Application.dll
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Application\bin\Debug\net8.0\GameStore.Application.deps.json
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Application\bin\Debug\net8.0\GameStore.Application.dll
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Application\bin\Debug\net8.0\GameStore.Application.pdb
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Application\bin\Debug\net8.0\GameStore.Domain.dll
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Application\bin\Debug\net8.0\GameStore.Domain.pdb
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Application\obj\Debug\net8.0\GameStore.Application.csproj.AssemblyReference.cache
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Application\obj\Debug\net8.0\GameStore.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Application\obj\Debug\net8.0\GameStore.Application.AssemblyInfoInputs.cache
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Application\obj\Debug\net8.0\GameStore.Application.AssemblyInfo.cs
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Application\obj\Debug\net8.0\GameStore.Application.csproj.CoreCompileInputs.cache
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Application\obj\Debug\net8.0\GameStore.Application.sourcelink.json
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Application\obj\Debug\net8.0\GameStor.34E1C27F.Up2Date
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Application\obj\Debug\net8.0\GameStore.Application.dll
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Application\obj\Debug\net8.0\refint\GameStore.Application.dll
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Application\obj\Debug\net8.0\GameStore.Application.pdb
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Application\obj\Debug\net8.0\ref\GameStore.Application.dll

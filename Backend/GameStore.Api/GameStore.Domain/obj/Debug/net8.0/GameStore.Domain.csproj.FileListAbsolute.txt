@@ -9,3 +9,15 @@ C:\Users\Admin\Desktop\ASP.NET Core\GameStore.Api\GameStore.Domain\obj\Debug\net
 C:\Users\Admin\Desktop\ASP.NET Core\GameStore.Api\GameStore.Domain\obj\Debug\net8.0\refint\GameStore.Domain.dll
 C:\Users\Admin\Desktop\ASP.NET Core\GameStore.Api\GameStore.Domain\obj\Debug\net8.0\GameStore.Domain.pdb
 C:\Users\Admin\Desktop\ASP.NET Core\GameStore.Api\GameStore.Domain\obj\Debug\net8.0\ref\GameStore.Domain.dll
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Domain\bin\Debug\net8.0\GameStore.Domain.deps.json
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Domain\bin\Debug\net8.0\GameStore.Domain.dll
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Domain\bin\Debug\net8.0\GameStore.Domain.pdb
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Domain\obj\Debug\net8.0\GameStore.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Domain\obj\Debug\net8.0\GameStore.Domain.AssemblyInfoInputs.cache
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Domain\obj\Debug\net8.0\GameStore.Domain.AssemblyInfo.cs
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Domain\obj\Debug\net8.0\GameStore.Domain.csproj.CoreCompileInputs.cache
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Domain\obj\Debug\net8.0\GameStore.Domain.sourcelink.json
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Domain\obj\Debug\net8.0\GameStore.Domain.dll
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Domain\obj\Debug\net8.0\refint\GameStore.Domain.dll
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Domain\obj\Debug\net8.0\GameStore.Domain.pdb
+C:\Users\Admin\Desktop\GameStore\Backend\GameStore.Api\GameStore.Domain\obj\Debug\net8.0\ref\GameStore.Domain.dll
