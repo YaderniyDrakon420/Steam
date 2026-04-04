@@ -1,4 +1,6 @@
 
+using Books.Application.Interfaces.Helpers;
+using Books.Infrastructure.Helpers;
 using GameStore.Application.Interfaces;
 using GameStore.Infrastructure.Persistence;
 using GameStore.Infrastructure.Repositories;
@@ -22,6 +24,7 @@ namespace GameStore.Api
             options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             builder.Services.AddScoped<IGameRepository, GameRepository>();
+            builder.Services.AddScoped<IHashHelper, HashHelper>();
 
             builder.Services.AddCors(options =>
             {
