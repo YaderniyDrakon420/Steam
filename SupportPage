@@ -1,0 +1,274 @@
+import { useState, useRef, useEffect } from "react";
+
+const css = `
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #1b2838; color: #c6d4df; font-family: Arial, sans-serif; }
+
+  /* ===== НАВБАР ===== */
+  .navbar {
+    background: #171a21;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .nav-logo { font-size: 20px; font-weight: 700; color: #fff; letter-spacing: -1px; display: flex; align-items: center; gap: 6px; }
+  .nav-logo span { font-size: 11px; letter-spacing: 2px; color: #8f98a0; font-weight: 400; }
+  .nav-links { display: flex; gap: 4px; }
+  .nav-link { font-size: 12px; color: #8f98a0; padding: 6px 10px; border-radius: 3px; cursor: pointer; text-decoration: none; transition: color 0.15s; }
+  .nav-link:hover, .nav-link.active { color: #fff; }
+  .nav-search { flex: 1; max-width: 220px; background: #2a3f55; border: none; border-radius: 3px; padding: 6px 10px; color: #c6d4df; font-size: 12px; outline: none; }
+  .nav-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .nav-icons { display: flex; gap: 14px; color: #8f98a0; font-size: 16px; }
+  .nav-signin { font-size: 12px; color: #c6d4df; background: none; border: none; cursor: pointer; padding: 6px 10px; }
+  .nav-download { background: linear-gradient(to bottom, #75b022, #588a1b); color: #d2e885; font-size: 12px; font-weight: 700; border: none; border-radius: 3px; padding: 7px 14px; cursor: pointer; }
+  @media (max-width: 600px) { .nav-links { display: none; } .nav-search { max-width: 120px; } }
+
+  /* ===== КОНТЕНТ ===== */
+  .page { max-width: 780px; margin: 0 auto; padding: 40px 20px 60px; }
+  .page-title { font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 20px; }
+
+  .search-wrap { position: relative; margin-bottom: 28px; max-width: 420px; }
+  .search-wrap::before { content: "🔍"; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 13px; }
+  .search-input { width: 100%; background: transparent; border: 1px solid #4a5a6a; border-radius: 20px; padding: 9px 14px 9px 34px; color: #c6d4df; font-size: 13px; outline: none; transition: border-color 0.2s; }
+  .search-input:focus { border-color: #66c0f4; }
+  .search-input::placeholder { color: #5a6a7a; }
+
+  /* ===== АККОРДЕОН ===== */
+  .accordion-list { margin-bottom: 32px; }
+  .accordion-item { border-bottom: 1px solid rgba(255,255,255,0.07); }
+  .accordion-item:first-child { border-top: 1px solid rgba(255,255,255,0.07); }
+
+  .accordion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 4px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.15s;
+  }
+  .accordion-header:hover { background: rgba(255,255,255,0.04); }
+  .accordion-title { font-size: 14px; color: #c6d4df; }
+
+  /* стрелка крутится при открытии */
+  .accordion-arrow {
+    font-size: 18px;
+    color: #8f98a0;
+    transition: transform 0.25s ease;
+    line-height: 1;
+  }
+  .accordion-arrow.open { transform: rotate(90deg); }
+
+  /* высота задаётся через JS — поэтому анимация всегда точная */
+  .accordion-body {
+    overflow: hidden;
+    transition: height 0.25s ease, opacity 0.2s ease;
+    height: 0;
+    opacity: 0;
+  }
+  .accordion-body.open { opacity: 1; }
+  .accordion-body-inner {
+    padding: 0 4px 16px;
+    font-size: 13px;
+    color: #8f98a0;
+    line-height: 1.6;
+  }
+
+  /* ===== ПАГИНАЦИЯ ===== */
+  .pagination { display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 48px; flex-wrap: wrap; }
+  .page-btn { background: none; border: none; color: #8f98a0; font-size: 13px; padding: 5px 9px; border-radius: 3px; cursor: pointer; transition: background 0.15s, color 0.15s; }
+  .page-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .page-btn.active { background: #316282; color: #fff; }
+  .page-btn:disabled { opacity: 0.3; cursor: default; }
+
+  /* ===== CTA ===== */
+  .cta-block { text-align: center; padding: 40px 20px; border-top: 1px solid rgba(255,255,255,0.07); margin-bottom: 40px; }
+  .cta-title { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 20px; }
+  .cta-btn { background: linear-gradient(to bottom, #75b022, #588a1b); color: #d2e885; font-size: 14px; font-weight: 700; border: none; border-radius: 3px; padding: 13px 28px; cursor: pointer; }
+  .cta-btn:hover { filter: brightness(1.1); }
+
+  /* ===== ФУТЕР ===== */
+  .footer { background: #171a21; border-top: 1px solid rgba(255,255,255,0.05); padding: 28px 20px; }
+  .footer-inner { max-width: 780px; margin: 0 auto; }
+  .footer-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .footer-socials { display: flex; gap: 16px; font-size: 20px; }
+  .footer-social { cursor: pointer; color: #8f98a0; transition: color 0.15s; }
+  .footer-social:hover { color: #fff; }
+  .footer-up { background: rgba(255,255,255,0.08); border: none; border-radius: 3px; color: #8f98a0; padding: 6px 10px; cursor: pointer; font-size: 14px; }
+  .footer-up:hover { color: #fff; }
+  .footer-copy { font-size: 11px; color: #5a6a7a; line-height: 1.6; margin-bottom: 14px; }
+  .footer-links { display: flex; flex-wrap: wrap; gap: 14px; }
+  .footer-link { font-size: 11px; color: #5a6a7a; cursor: pointer; text-decoration: none; transition: color 0.15s; }
+  .footer-link:hover { color: #c6d4df; }
+`;
+
+// категории — TODO: заменить на fetch('/api/support/categories')
+const CATEGORIES = [
+  { id: 1, title: "Game problems", body: "If you are contacted by support, the email will come from the official domain. Any email with a different domain claiming to be support is not official." },
+  { id: 2, title: "Refund", body: "To request a refund, go to your purchase history and select the game. Refunds are available within 14 days of purchase if you have less than 2 hours of playtime." },
+  { id: 3, title: "My account", body: "Manage your account settings, change your password, enable two-factor authentication, and review your purchase history." },
+  { id: 4, title: "Client", body: "If you are having issues with the client application, try restarting it or reinstalling. Check system requirements and firewall settings." },
+  { id: 5, title: "Community problems", body: "Report inappropriate behavior, appeal bans, or get help with community features like forums, reviews, and discussions." },
+  { id: 6, title: "Device problems", body: "Get help with hardware compatibility, controller support, display issues, and performance optimization." },
+  { id: 7, title: "Gifts", body: "Learn how to send gifts, manage received gifts, and resolve issues with gift purchases." },
+  { id: 8, title: "Frequent questions", body: "Browse the most commonly asked questions and their answers. Find quick solutions to common issues." },
+];
+
+function Navbar() {
+  return (
+    <nav className="navbar">
+      <div className="nav-logo">▼ <span>STORE</span></div>
+      <div className="nav-links">
+        <a className="nav-link">Discover</a>
+        <a className="nav-link active">Support</a>
+        <a className="nav-link">News</a>
+      </div>
+      <input className="nav-search" placeholder="Search store" />
+      <div className="nav-right">
+        <div className="nav-icons"><span>⚙</span><span>♡</span><span>🛒</span><span>🌐</span></div>
+        <button className="nav-signin">Sign in</button>
+        <button className="nav-download">Download</button>
+      </div>
+    </nav>
+  );
+}
+
+// ===== АККОРДЕОН — анимация через useRef =====
+function AccordionItem({ item, isOpen, onToggle }) {
+  const bodyRef = useRef(null);
+
+  // каждый раз когда isOpen меняется — ставим реальную высоту
+  useEffect(() => {
+    const el = bodyRef.current;
+    if (!el) return;
+
+    if (isOpen) {
+      // ставим высоту содержимого — браузер плавно анимирует
+      el.style.height = el.scrollHeight + "px";
+    } else {
+      // сначала фиксируем текущую высоту, потом сбрасываем в 0
+      el.style.height = el.scrollHeight + "px";
+      requestAnimationFrame(() => {
+        el.style.height = "0px";
+      });
+    }
+  }, [isOpen]);
+
+  return (
+    <div className="accordion-item">
+      <div className="accordion-header" onClick={onToggle}>
+        <span className="accordion-title">{item.title}</span>
+        <span className={`accordion-arrow ${isOpen ? "open" : ""}`}>›</span>
+      </div>
+
+      {/* ref на обёртку — по ней считаем высоту */}
+      <div ref={bodyRef} className={`accordion-body ${isOpen ? "open" : ""}`}>
+        <div className="accordion-body-inner">{item.body}</div>
+      </div>
+    </div>
+  );
+}
+
+function Pagination({ current, onChange }) {
+  const pages = [1, 2, 3, 4, 5, 6];
+  return (
+    <div className="pagination">
+      <button className="page-btn" disabled={current === 1} onClick={() => onChange(current - 1)}>‹ Previous</button>
+      {pages.map(p => (
+        <button key={p} className={`page-btn ${current === p ? "active" : ""}`} onClick={() => onChange(p)}>{p}</button>
+      ))}
+      <span className="page-btn" style={{ cursor: "default" }}>...</span>
+      <button className="page-btn" onClick={() => onChange(198)}>198</button>
+      <button className="page-btn" onClick={() => onChange(Math.min(current + 1, 198))}>Next ›</button>
+    </div>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="footer">
+      <div className="footer-inner">
+        <div className="footer-top">
+          <div className="footer-socials">
+            <span className="footer-social">f</span>
+            <span className="footer-social">𝕏</span>
+            <span className="footer-social">▶</span>
+          </div>
+          <button className="footer-up" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>↑</button>
+        </div>
+        <p className="footer-copy">
+          © 2025 Valve Corporation. All rights reserved.<br />
+          VAT included in all prices where applicable.
+        </p>
+        <div className="footer-links">
+          {["Terms of service", "Jobs", "Rules", "Contracts", "Gift cards", "Facebook", "Twitter"].map(l => (
+            <a key={l} className="footer-link">{l}</a>
+          ))}
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+// ===== ГЛАВНЫЙ КОМПОНЕНТ =====
+export default function SupportPage() {
+  const [openId, setOpenId] = useState(null);
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+
+  // TODO: при большом кол-ве данных — поиск на бекенде: GET /api/support/search?q=...
+  const filtered = CATEGORIES.filter(c =>
+    c.title.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const toggle = (id) => setOpenId(prev => prev === id ? null : id);
+
+  return (
+    <>
+      <style>{css}</style>
+      <Navbar />
+      <main className="page">
+        <h1 className="page-title">Support</h1>
+
+        <div className="search-wrap">
+          <input
+            className="search-input"
+            placeholder="Find help"
+            value={search}
+            onChange={e => { setSearch(e.target.value); setOpenId(null); }}
+          />
+        </div>
+
+        <div className="accordion-list">
+          {filtered.length > 0
+            ? filtered.map(item => (
+                <AccordionItem
+                  key={item.id}
+                  item={item}
+                  isOpen={openId === item.id}
+                  onToggle={() => toggle(item.id)}
+                />
+              ))
+            : <p style={{ color: "#8f98a0", fontSize: 14 }}>Nothing found</p>
+          }
+        </div>
+
+        {/* TODO: передавать реальное кол-во страниц с API */}
+        <Pagination current={page} onChange={setPage} />
+
+        <div className="cta-block">
+          <h2 className="cta-title">Have any other questions?</h2>
+          {/* TODO: повесить ссылку на email или форму */}
+          <button className="cta-btn">Contact us on our email!</button>
+        </div>
+      </main>
+      <Footer />
+    </>
+  );
+}
