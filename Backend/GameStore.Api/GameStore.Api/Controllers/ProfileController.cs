@@ -53,4 +53,25 @@ public class ProfileController : ControllerBase
 
         return Ok(achievements);
     }
+
+    [HttpGet("{userId}")]
+    public async Task<IActionResult> GetProfile(int userId)
+    {
+        var user = await _context.Users
+            .Where(u => u.Id == userId)
+            .Select(u => new {
+                nickname = u.Nickname,
+                email = u.Email,
+                avatarUrl = (string)null, // Если в БД нет аватара
+                level = u.UserLevel,
+                balance = u.Balance,
+                gamesCount = _context.UserLibrary.Count(ul => ul.UserId == userId),
+                achievementsCount = _context.UserAchievements.Count(ua => ua.UserId == userId)
+            })
+            .FirstOrDefaultAsync();
+
+        if (user == null) return NotFound();
+
+        return Ok(user);
+    }
 }

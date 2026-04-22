@@ -43,6 +43,22 @@
   },
   {
     "ContainingType": "GameStore.Api.Controllers.ProfileController",
+    "Method": "GetProfile",
+    "RelativePath": "api/Profile/{userId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "GameStore.Api.Controllers.ProfileController",
     "Method": "GetUserAchievements",
     "RelativePath": "api/Profile/{userId}/achievements",
     "HttpMethod": "GET",
