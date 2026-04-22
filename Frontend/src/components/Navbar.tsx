@@ -1,4 +1,6 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext"; // Импортируем контекст
 
 const navStyles = `
   .navbar {
@@ -53,12 +55,18 @@ const navStyles = `
   .nav-right { margin-left: auto; display: flex; align-items: center; gap: 15px; }
   .nav-icons { display: flex; gap: 12px; color: #8f98a0; font-size: 15px; cursor: pointer; }
   
-  .nav-signin { 
+  .nav-signin, .nav-logout { 
     font-size: 12px; 
     color: #66c0f4; 
     text-decoration: none; 
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-family: inherit;
   }
-  .nav-signin:hover { text-decoration: underline; }
+  .nav-signin:hover, .nav-logout:hover { text-decoration: underline; }
+  .nav-logout { color: #e84040; } /* Сделаем выход красным для отличия */
 
   .nav-download { 
     background: linear-gradient(to bottom, #75b022, #588a1b); 
@@ -74,6 +82,13 @@ const navStyles = `
 
 export default function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const auth = useContext(AuthContext); // Подключаем данные об авторизации
+
+  const handleLogout = () => {
+    auth?.logout(); // Вызываем выход из контекста
+    navigate("/");  // Уводим на главную
+  };
 
   return (
     <>
@@ -96,12 +111,16 @@ export default function Navbar() {
           >
             Support
           </Link>
-          <Link 
-            to="/profile" 
-            className={`nav-link ${location.pathname === "/profile" ? "active" : ""}`}
-          >
-            Profile
-          </Link>
+          
+          {/* Показываем ссылку на Профиль только если вошли */}
+          {auth?.isAuthenticated && (
+            <Link 
+              to="/profile" 
+              className={`nav-link ${location.pathname === "/profile" ? "active" : ""}`}
+            >
+              Profile
+            </Link>
+          )}
         </div>
 
         <input className="nav-search" placeholder="Search store" />
@@ -110,9 +129,21 @@ export default function Navbar() {
           <div className="nav-icons">
             <span>⚙</span>
             <span>♡</span>
+            {/* Иконка корзины видна всем, но логику доступа к ней мы добавим позже */}
             <span>🛒</span>
           </div>
-          <Link to="/auth" className="nav-signin">Sign in</Link>
+
+          {/* Логика переключения кнопок */}
+          {auth?.isAuthenticated ? (
+            <button onClick={handleLogout} className="nav-logout">
+              Logout
+            </button>
+          ) : (
+            <Link to="/auth" className="nav-signin">
+              Sign in
+            </Link>
+          )}
+
           <button className="nav-download">Download</button>
         </div>
       </nav>
