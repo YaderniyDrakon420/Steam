@@ -1,0 +1,198 @@
+import { useState } from "react";
+
+const css = `
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #1b2838; color: #c6d4df; font-family: Arial, sans-serif; min-height: 100vh; }
+
+  /* НАВБАР */
+  .navbar {
+    background: #171a21; height: 52px; display: flex; align-items: center;
+    padding: 0 20px; gap: 20px; position: sticky; top: 0; z-index: 100;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .nav-logo { font-size: 18px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px; }
+  .nav-logo span { font-size: 11px; letter-spacing: 2px; color: #8f98a0; font-weight: 400; }
+  .nav-links { display: flex; gap: 4px; }
+  .nav-link { font-size: 12px; color: #8f98a0; padding: 6px 10px; border-radius: 3px; cursor: pointer; background: none; border: none; }
+  .nav-link:hover { color: #fff; }
+  .nav-search { max-width: 200px; background: #2a3f55; border: none; border-radius: 3px; padding: 6px 10px; color: #c6d4df; font-size: 12px; outline: none; }
+  .nav-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .nav-icons { display: flex; gap: 12px; color: #8f98a0; font-size: 15px; cursor: pointer; }
+  .nav-signin { font-size: 12px; color: #c6d4df; background: none; border: none; cursor: pointer; }
+  .nav-download { background: linear-gradient(to bottom, #75b022, #588a1b); color: #d2e885; font-size: 12px; font-weight: 700; border: none; border-radius: 3px; padding: 7px 14px; cursor: pointer; }
+  @media (max-width: 600px) { .nav-links { display: none; } }
+
+  /* ОБЩИЙ КОНТЕЙНЕР */
+  .content { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; width: 100%; }
+
+  /* СТИЛИ НОВОСТЕЙ */
+  .section-title-main {
+    font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 24px;
+    border-left: 3px solid #66c0f4; padding-left: 12px;
+  }
+  .news-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px;
+  }
+  .news-card {
+    background: #16202d; border-radius: 6px; padding: 18px;
+    transition: background 0.2s;
+  }
+  .news-card:hover { background: #1a2a3a; }
+  .news-date { font-size: 11px; color: #8f98a0; margin-bottom: 8px; }
+  .news-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 10px; line-height: 1.3; }
+  .news-desc { font-size: 13px; color: #c6d4df; line-height: 1.4; margin-bottom: 12px; }
+  .news-readmore { font-size: 12px; color: #66c0f4; text-decoration: none; }
+  .news-readmore:hover { text-decoration: underline; }
+  .news-image {
+    width: 100%; height: 140px; background: #1e2a36; border-radius: 4px;
+    margin-bottom: 12px; display: flex; align-items: center; justify-content: center;
+    color: #5a6a7a; font-size: 12px; overflow: hidden;
+  }
+  .news-image img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* ПАГИНАЦИЯ */
+  .pagination {
+    display: flex; align-items: center; justify-content: center;
+    gap: 4px; margin-top: 40px; margin-bottom: 20px; flex-wrap: wrap;
+  }
+  .page-btn {
+    background: none; border: none; color: #8f98a0; font-size: 13px;
+    padding: 5px 9px; border-radius: 3px; cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .page-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .page-btn.active { background: #316282; color: #fff; }
+  .page-btn:disabled { opacity: 0.3; cursor: default; }
+
+  /* ФУТЕР */
+  .footer {
+    background: #171a21; border-top: 1px solid rgba(255,255,255,0.05);
+    padding: 24px 20px; margin-top: auto;
+  }
+  .footer-inner { max-width: 860px; margin: 0 auto; }
+  .footer-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .footer-socials { display: flex; gap: 14px; font-size: 18px; color: #8f98a0; cursor: pointer; }
+  .footer-up { background: rgba(255,255,255,0.08); border: none; border-radius: 3px; color: #8f98a0; padding: 5px 10px; cursor: pointer; }
+  .footer-copy { font-size: 11px; color: #5a6a7a; line-height: 1.6; margin-bottom: 12px; }
+  .footer-links { display: flex; flex-wrap: wrap; gap: 12px; }
+  .footer-link { font-size: 11px; color: #5a6a7a; cursor: pointer; text-decoration: none; }
+  .footer-link:hover { color: #c6d4df; }
+`;
+
+// ==================== ДАННЫЕ НОВОСТЕЙ ====================
+const NEWS_DATA = [
+  { days: "4 days ago", title: "Star Wars: Knights of the Old Republic I and II available for free on the Epic Games Store on mobile", desc: "Feudal Gotham's Dark Night, Ninja Knight Batman, and the mischievous wizard Karis Harkey Quinn strike with a", link: "#", image: null },
+  { days: "2 days ago", title: "How The Thing, Aliens, and Predator helped shape Killing Floor 3", desc: "Killing Floor 3 does talk body horror, storytelling, and finding the balance", link: "#", image: null },
+  { days: "1 day ago", title: "Black Hawk Down returns in Delta Force: a free co-op battle available now", desc: "Delta Force: Black Hawk Down is out now for free. Review the new features by scrolling down to find them.", link: "#", image: null },
+  { days: "20 days ago", title: "Forge your legend in Blades of Fire, coming to Epic Game Store this May", desc: "Only you can answer the riddle of steel!", link: "#", image: null },
+  { days: "14 days ago", title: "Infinity Nikki daily guide: Fastest ways to earn Bling, Diamonds, and crafting materials", desc: "Need more Bling, Bubbles, and Diamonds in Infinity Nikki but ran out of quests? No worries! Here are a few simple daily activities you can do to fill up your backpack in no time.", link: "#", image: null },
+  { days: "14 days ago", title: "SMITE 2 beginner's guide: Tips for understanding gods, roles, and teamwork", desc: "Learn how to pick the right god, master roles, and play as a team in this fast-paced MOBA, whether you're new to ", link: "#", image: null },
+  { days: "4 days ago", title: "Night shift nightmare: The WereCleaner turns office cleaning into a moral dilemma", desc: "The WereCleaner combines office drudgery with hypernormal murder. Discover how it USED students’ brains.", link: "#", image: null },
+  { days: "6 days ago", title: "Shadowheart and Nathan Drake will host the Future Games Show Spring Showcase on March 20", desc: "The show will have over 40 titles, including FBC: Findbreak.", link: "#", image: null },
+  { days: "11 days ago", title: "Deity-slaying co-op roguelike 33 Immortals releases on Epic Games Store March 18", desc: "Learn all about the 33 player co-op slasher that redefines the genre.", link: "#", image: null },
+  { days: "2 days ago", title: "Killing Floor 3 wants to tick all the modern multiplayer boxes", desc: "Our impressions from the closed beta of the bold new game mode.", link: "#", image: null },
+];
+
+// ==================== КОМПОНЕНТ НОВОСТЕЙ ====================
+function NewsCard({ item }) {
+  return (
+    <div className="news-card">
+      <div className="news-image">
+        {item.image ? <img src={item.image} alt="" /> : null}
+      </div>
+      <div className="news-date">{item.days}</div>
+      <h3 className="news-title">{item.title}</h3>
+      <p className="news-desc">{item.desc}</p>
+      <a href={item.link} className="news-readmore">Read More →</a>
+    </div>
+  );
+}
+
+function NewsPagination() {
+  const [current, setCurrent] = useState(1);
+  const totalPages = 400;
+  const pages = [1, 2, 3, 4, 5, 6];
+
+  return (
+    <div className="pagination">
+      <button className="page-btn" disabled={current === 1} onClick={() => setCurrent(p => p - 1)}>‹ Previous</button>
+      {pages.map(p => (
+        <button key={p} className={`page-btn ${current === p ? "active" : ""}`} onClick={() => setCurrent(p)}>{p}</button>
+      ))}
+      <span className="page-btn" style={{ cursor: "default" }}>...</span>
+      <button className="page-btn" onClick={() => setCurrent(totalPages)}>{totalPages}</button>
+      <button className="page-btn" disabled={current === totalPages} onClick={() => setCurrent(p => p + 1)}>Next ›</button>
+    </div>
+  );
+}
+
+function NewsPage() {
+  return (
+    <>
+      <h1 className="section-title-main">Relevant News</h1>
+      <div className="news-grid">
+        {NEWS_DATA.map((item, idx) => (
+          <NewsCard key={idx} item={item} />
+        ))}
+      </div>
+      <NewsPagination />
+    </>
+  );
+}
+
+// ==================== НАВБАР И ФУТЕР ====================
+function Navbar({ currentPage, onPageChange }) {
+  return (
+    <nav className="navbar">
+      <div className="nav-logo">▼ <span>STORE</span></div>
+      <div className="nav-links">
+        <button className="nav-link" onClick={() => onPageChange("news")} style={{ color: currentPage === "news" ? "#fff" : "#8f98a0" }}>News</button>
+        {/* Кнопка Discover — заглушка, ничего не делает */}
+        <button className="nav-link" style={{ cursor: "default" }}>Discover</button>
+        <a className="nav-link">Support</a>
+      </div>
+      <input className="nav-search" placeholder="Search store" />
+      <div className="nav-right">
+        <div className="nav-icons"><span>⚙</span><span>♡</span><span>🛒</span><span>🌐</span></div>
+        <span style={{ fontSize: 12, color: "#66c0f4" }}>Nickname_320</span>
+        <button className="nav-download">Download</button>
+      </div>
+    </nav>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="footer">
+      <div className="footer-inner">
+        <div className="footer-top">
+          <div className="footer-socials"><span>f</span><span>𝕏</span><span>▶</span></div>
+          <button className="footer-up" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>↑</button>
+        </div>
+        <p className="footer-copy">© 2025 Valve Corporation. All rights reserved.<br />VAT included in all prices where applicable.</p>
+        <div className="footer-links">
+          {["Terms of service","Jobs","Rules","Contracts","Gift cards","Facebook","Twitter"].map(l => <a key={l} className="footer-link">{l}</a>)}
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+// ==================== ГЛАВНЫЙ КОМПОНЕНТ ====================
+export default function App() {
+  const [page, setPage] = useState("news");
+
+  return (
+    <>
+      <style>{css}</style>
+      <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+        <Navbar currentPage={page} onPageChange={setPage} />
+        <div className="content">
+          {page === "news" && <NewsPage />}
+          {/* Других страниц нет */}
+        </div>
+        <Footer />
+      </div>
+    </>
+  );
+}
