@@ -1,0 +1,712 @@
+import { useState } from "react";
+
+// ─────────────────────────────────────────────────────────────
+// StorePage.jsx — главная страница магазина
+//
+// Все данные пустые — бекендер подключает:
+//   GET /api/games/featured       → heroGame
+//   GET /api/games/discover       → discoverGames
+//   GET /api/games/sale-spotlight → saleGames
+//   GET /api/games/featured-sale  → bigSaleGames
+//   GET /api/games/free           → freeGames
+//   GET /api/games/top-sellers    → topSellers
+//   GET /api/games/most-played    → mostPlayed
+//   GET /api/games/upcoming       → upcoming
+//   GET /api/games/popular        → popularGames
+//   GET /api/games/new            → newGames
+// ─────────────────────────────────────────────────────────────
+
+const css = `
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #121212; color: #c7c7c7; font-family: Arial, sans-serif; font-size: 14px; }
+  a { text-decoration: none; color: inherit; cursor: pointer; }
+  button { cursor: pointer; font-family: inherit; }
+
+  /* ── NAVBAR ── */
+  .nav {
+    background: #1a1a1a; height: 50px; display: flex; align-items: center;
+    padding: 0 24px; gap: 0; position: sticky; top: 0; z-index: 200;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .nav-logo {
+    font-size: 17px; font-weight: 700; color: #fff;
+    display: flex; align-items: center; gap: 8px; margin-right: 20px;
+  }
+  .nav-logo-sub { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: #666; }
+  .nav-tabs { display: flex; }
+  .nav-tab {
+    font-size: 13px; color: #888; padding: 0 14px; height: 50px;
+    display: flex; align-items: center;
+    border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s;
+  }
+  .nav-tab:hover { color: #fff; }
+  .nav-tab.active { color: #fff; border-bottom-color: #23d18b; }
+  .nav-search-wrap { position: relative; margin-left: 10px; }
+  .nav-search-wrap::before { content: '⌕'; position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: #555; font-size: 15px; pointer-events: none; }
+  .nav-search { background: #2a2a2a; border: 1px solid rgba(255,255,255,0.08); border-radius: 3px; padding: 5px 10px 5px 28px; color: #c7c7c7; font-size: 12px; outline: none; width: 160px; }
+  .nav-right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+  .nav-icons { display: flex; gap: 16px; color: #666; font-size: 16px; }
+  .nav-icon:hover { color: #fff; }
+  .nav-signin { font-size: 13px; color: #c7c7c7; background: none; border: none; padding: 6px 10px; }
+  .nav-signin:hover { color: #fff; }
+  .nav-btn {
+    background: #23d18b; color: #000; font-size: 12px; font-weight: 700;
+    border: none; border-radius: 3px; padding: 7px 14px;
+  }
+  .nav-btn:hover { background: #1db370; }
+  @media (max-width: 680px) { .nav-tabs { display: none; } .nav-search { width: 110px; } }
+
+  /* ── СТРАНИЦА ── */
+  .page { max-width: 1180px; margin: 0 auto; padding: 24px 20px 60px; }
+
+  /* ── HERO BANNER ── */
+  .hero {
+    border-radius: 8px; overflow: hidden; height: 400px;
+    background: #1a1a2a; display: flex; align-items: flex-end;
+    position: relative; margin-bottom: 32px; cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  /* сюда придёт Games.HeaderImageUrl как background-image */
+  .hero-img {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center;
+    transition: transform 0.4s;
+  }
+  .hero:hover .hero-img { transform: scale(1.02); }
+  .hero-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 50%, transparent 100%);
+  }
+  .hero-content { position: relative; z-index: 1; padding: 28px 32px; width: 100%; }
+  .hero-badge { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #888; margin-bottom: 8px; }
+  /* Games.Title */
+  .hero-title { font-size: 32px; font-weight: 700; color: #fff; margin-bottom: 14px; line-height: 1.1; }
+  .hero-empty { /* показывается пока нет данных */ display: flex; align-items: center; justify-content: center; height: 100%; color: #333; font-size: 14px; }
+  .hero-btn {
+    background: #23d18b; color: #000; font-size: 13px; font-weight: 700;
+    border: none; border-radius: 4px; padding: 10px 24px;
+  }
+  .hero-btn:hover { background: #1db370; }
+  .hero-dots { position: absolute; bottom: 14px; right: 20px; display: flex; gap: 6px; z-index: 2; }
+  .hero-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.25); transition: background 0.2s; }
+  .hero-dot.active { background: #23d18b; }
+
+  /* ── СЕКЦИЯ ── */
+  .section { margin-bottom: 36px; }
+  .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .section-title { font-size: 15px; font-weight: 700; color: #fff; }
+  .section-more { font-size: 12px; color: #66c0f4; background: none; border: none; padding: 0; }
+  .section-more:hover { text-decoration: underline; }
+
+  /* ── СКЕЛЕТОН — пока данных нет ── */
+  .skeleton {
+    background: linear-gradient(90deg, #1e1e1e 25%, #272727 50%, #1e1e1e 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 5px;
+  }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+  /* ── СЕТКИ КАРТОЧЕК ── */
+
+  /* 6 колонок (discover, new) */
+  .grid-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+  @media (max-width: 960px) { .grid-6 { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 480px) { .grid-6 { grid-template-columns: repeat(2, 1fr); } }
+
+  /* 5 колонок (popular) */
+  .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  @media (max-width: 860px) { .grid-5 { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 480px) { .grid-5 { grid-template-columns: repeat(2, 1fr); } }
+
+  /* 3 колонки */
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 640px) { .grid-3 { grid-template-columns: 1fr; } }
+
+  /* 3 списка рядом */
+  .grid-lists { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  @media (max-width: 700px) { .grid-lists { grid-template-columns: 1fr; } }
+
+  /* ── КАРТОЧКА ИГРЫ (вертикальная) ── */
+  .game-card {
+    background: #1e1e1e; border-radius: 5px; overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.06);
+    transition: transform 0.15s, border-color 0.15s; cursor: pointer;
+  }
+  .game-card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.18); }
+  /* Games.CoverImageUrl */
+  .game-thumb {
+    width: 100%; aspect-ratio: 3/4;
+    background: #252525;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: #444; text-align: center;
+    overflow: hidden; background-size: cover; background-position: center;
+  }
+  .game-info { padding: 8px; }
+  /* Games.Title */
+  .game-name { font-size: 11px; font-weight: 600; color: #fff; margin-bottom: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* Games.Price + DiscountPercentage */
+  .game-price { font-size: 11px; color: #888; }
+  .game-price.free { color: #23d18b; font-weight: 700; }
+  .price-row { display: flex; align-items: center; gap: 5px; }
+  .price-badge { background: #4c6b22; color: #beee11; font-size: 10px; font-weight: 700; padding: 1px 4px; border-radius: 2px; }
+  .price-old { text-decoration: line-through; color: #555; font-size: 10px; }
+  .price-new { color: #beee11; font-weight: 700; }
+
+  /* ── КАРТОЧКА ИГРЫ (горизонтальная, для sale spotlight) ── */
+  .sale-card {
+    background: #1e1e1e; border-radius: 5px; overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.06);
+    transition: transform 0.15s; cursor: pointer;
+  }
+  .sale-card:hover { transform: translateY(-3px); }
+  /* Games.CoverImageUrl */
+  .sale-thumb { width: 100%; aspect-ratio: 16/9; background: #252525; background-size: cover; background-position: center; }
+  .sale-info { padding: 8px; }
+  .sale-name { font-size: 11px; font-weight: 600; color: #fff; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* ── БОЛЬШАЯ КАРТОЧКА СО СКИДКОЙ (3 штуки) ── */
+  .big-card {
+    background: #1e1e1e; border-radius: 6px; overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.06);
+    transition: transform 0.15s; cursor: pointer;
+  }
+  .big-card:hover { transform: translateY(-3px); }
+  /* Games.HeaderImageUrl */
+  .big-card-thumb { width: 100%; height: 150px; background: #252525; background-size: cover; background-position: center; }
+  .big-card-info { padding: 12px; }
+  .big-card-name { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .big-card-meta { font-size: 11px; color: #666; margin-bottom: 8px; }
+  .big-card-bottom { display: flex; align-items: center; justify-content: space-between; }
+
+  /* ── КАРТОЧКА БЕСПЛАТНОЙ ИГРЫ ── */
+  .free-card {
+    background: #1e1e1e; border-radius: 6px; overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.06);
+    transition: transform 0.15s; cursor: pointer;
+  }
+  .free-card:hover { transform: translateY(-3px); }
+  .free-thumb { width: 100%; height: 130px; background: #252525; background-size: cover; background-position: center; }
+  .free-info { padding: 10px 12px; }
+  .free-name { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .free-dates { font-size: 11px; color: #666; margin-bottom: 8px; }
+  .free-tag {
+    display: inline-block; background: rgba(35,209,139,0.12);
+    border: 1px solid rgba(35,209,139,0.25); color: #23d18b;
+    font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 2px;
+  }
+
+  /* ── FEATURED STRIP (3 варианта Fortnite) ── */
+  .strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; border-radius: 8px; overflow: hidden; margin-bottom: 36px; }
+  @media (max-width: 600px) { .strip { grid-template-columns: 1fr; } }
+  .strip-card {
+    position: relative; height: 190px; background: #1e1e1e;
+    overflow: hidden; cursor: pointer; transition: filter 0.15s;
+    background-size: cover; background-position: center;
+  }
+  .strip-card:hover { filter: brightness(1.1); }
+  .strip-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%);
+  }
+  .strip-content { position: absolute; bottom: 0; left: 0; right: 0; padding: 14px; }
+  .strip-title { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 3px; }
+  .strip-sub { font-size: 11px; color: #888; margin-bottom: 8px; }
+  .strip-btn {
+    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 3px; color: #fff; font-size: 11px; font-weight: 700; padding: 5px 12px;
+  }
+  .strip-btn:hover { background: rgba(255,255,255,0.22); }
+
+  /* ── ПРОМО БАННЕР ── */
+  .promo {
+    background: linear-gradient(135deg, #0a1628, #12263c);
+    border: 1px solid rgba(102,192,244,0.18); border-radius: 8px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 24px 32px; margin-bottom: 36px; gap: 20px;
+  }
+  .promo-left { display: flex; align-items: center; gap: 18px; }
+  .promo-icon { width: 52px; height: 52px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+  .promo-text h3 { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .promo-text p { font-size: 12px; color: #666; }
+  .promo-btn { background: #66c0f4; color: #000; font-size: 12px; font-weight: 700; border: none; border-radius: 4px; padding: 9px 18px; white-space: nowrap; }
+  .promo-btn:hover { opacity: 0.85; }
+  @media (max-width: 600px) { .promo { flex-direction: column; align-items: flex-start; } }
+
+  /* ── СПИСКИ (Top Sellers, Most Played, Upcoming) ── */
+  .list-title { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 12px; }
+  .list-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+    cursor: pointer;
+  }
+  .list-item:last-child { border-bottom: none; }
+  .list-num { font-size: 12px; color: #555; width: 16px; text-align: right; flex-shrink: 0; }
+  /* Games.CoverImageUrl маленький */
+  .list-thumb { width: 40px; height: 40px; border-radius: 4px; background: #252525; flex-shrink: 0; background-size: cover; background-position: center; }
+  .list-info { flex: 1; min-width: 0; }
+  .list-name { font-size: 12px; font-weight: 600; color: #c7c7c7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color 0.15s; }
+  .list-item:hover .list-name { color: #fff; }
+  .list-price { font-size: 11px; color: #666; }
+  .list-price.free { color: #23d18b; font-weight: 700; }
+
+  /* ── FREE BANNER заголовок ── */
+  .free-header {
+    background: #1e1e1e; border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px; padding: 14px 18px;
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
+  }
+  .free-header-left { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; color: #fff; }
+  .free-icon { width: 26px; height: 26px; background: #23d18b; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #000; }
+
+  /* ── ПАГИНАЦИЯ ── */
+  .pagination { display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 40px; flex-wrap: wrap; }
+  .pg-btn { background: none; border: 1px solid rgba(255,255,255,0.08); border-radius: 3px; color: #666; font-size: 12px; padding: 5px 9px; transition: all 0.15s; }
+  .pg-btn:hover { background: #2a2a2a; color: #fff; }
+  .pg-btn.active { border-color: #23d18b; color: #23d18b; }
+  .pg-btn:disabled { opacity: 0.3; cursor: default; }
+
+  /* ── ФУТЕР ── */
+  .footer { background: #111; border-top: 1px solid rgba(255,255,255,0.06); padding: 28px 20px; }
+  .footer-inner { max-width: 1180px; margin: 0 auto; }
+  .footer-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .footer-socials { display: flex; gap: 12px; }
+  .footer-social { width: 34px; height: 34px; background: #1e1e1e; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #666; transition: color 0.15s; }
+  .footer-social:hover { color: #fff; }
+  .footer-up { background: #1e1e1e; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; color: #666; padding: 7px 12px; font-size: 13px; }
+  .footer-up:hover { color: #fff; }
+  .footer-logo { font-size: 32px; color: rgba(255,255,255,0.06); font-weight: 900; letter-spacing: -2px; }
+  .footer-copy { font-size: 11px; color: #555; line-height: 1.7; margin-bottom: 14px; max-width: 600px; }
+  .footer-links { display: flex; flex-wrap: wrap; gap: 14px; }
+  .footer-link { font-size: 11px; color: #555; transition: color 0.15s; }
+  .footer-link:hover { color: #c7c7c7; }
+
+  /* пустая карточка — показывается когда данных нет */
+  .empty-card {
+    background: #1a1a1a; border: 1px dashed rgba(255,255,255,0.08);
+    border-radius: 5px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 6px;
+    color: #333; font-size: 11px; text-align: center;
+  }
+  .empty-card-icon { font-size: 22px; opacity: 0.4; }
+`;
+
+// ─────────────────────────────────────────────────────────────
+// КОМПОНЕНТЫ
+// ─────────────────────────────────────────────────────────────
+
+function Navbar() {
+  return (
+    <nav className="nav">
+      <div className="nav-logo">
+        ▼ <span className="nav-logo-sub">STORE</span>
+      </div>
+      <div className="nav-tabs">
+        <a className="nav-tab active">Discover</a>
+        <a className="nav-tab">Support</a>
+        <a className="nav-tab">News</a>
+      </div>
+      <div className="nav-search-wrap">
+        <input className="nav-search" placeholder="Search store" />
+      </div>
+      <div className="nav-right">
+        <div className="nav-icons">
+          <span className="nav-icon">⚙</span>
+          <span className="nav-icon">♡</span>
+          <span className="nav-icon">🛒</span>
+          <span className="nav-icon">🌐</span>
+        </div>
+        <button className="nav-signin">Sign in</button>
+        <button className="nav-btn">Download</button>
+      </div>
+    </nav>
+  );
+}
+
+// заголовок секции
+function SectionHead({ title, onMore }) {
+  return (
+    <div className="section-head">
+      <h2 className="section-title">{title}</h2>
+      {onMore && <button className="section-more" onClick={onMore}>View more</button>}
+    </div>
+  );
+}
+
+// пустая карточка — пока нет данных из API
+function EmptyCard({ aspect = "3/4" }) {
+  return (
+    <div className="empty-card" style={{ aspectRatio: aspect }}>
+      <span className="empty-card-icon">🎮</span>
+      <span>No data yet</span>
+    </div>
+  );
+}
+
+// вертикальная карточка игры
+// props: { title, coverUrl, price, discountPct, oldPrice }
+// всё это придёт из Games таблицы
+function GameCard({ game }) {
+  if (!game) return <EmptyCard aspect="3/4" />;
+
+  const hasDiscount = game.discountPct > 0;
+  const isFree = game.price === 0 || game.price === "Free";
+
+  return (
+    <div className="game-card">
+      {/* Games.CoverImageUrl */}
+      <div
+        className="game-thumb"
+        style={game.coverUrl ? { backgroundImage: `url(${game.coverUrl})`, backgroundSize: "cover" } : {}}
+      >
+        {!game.coverUrl && "No cover"}
+      </div>
+      <div className="game-info">
+        {/* Games.Title */}
+        <div className="game-name">{game.title}</div>
+        {/* Games.Price + DiscountPercentage */}
+        {isFree ? (
+          <div className="game-price free">Free</div>
+        ) : hasDiscount ? (
+          <div className="price-row">
+            <span className="price-badge">-{game.discountPct}%</span>
+            <span className="price-old">${game.oldPrice}</span>
+            <span className="price-new">${game.price}</span>
+          </div>
+        ) : (
+          <div className="game-price">${game.price}</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// горизонтальная карточка (sale spotlight)
+function SaleCard({ game }) {
+  if (!game) return <EmptyCard aspect="16/9" />;
+  const hasDiscount = game.discountPct > 0;
+  return (
+    <div className="sale-card">
+      <div className="sale-thumb" style={game.coverUrl ? { backgroundImage: `url(${game.coverUrl})` } : {}} />
+      <div className="sale-info">
+        <div className="sale-name">{game.title}</div>
+        {hasDiscount ? (
+          <div className="price-row">
+            <span className="price-badge">-{game.discountPct}%</span>
+            <span className="price-old">${game.oldPrice}</span>
+            <span className="price-new">${game.price}</span>
+          </div>
+        ) : (
+          <div className="game-price">${game.price}</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// большая карточка со скидкой (3 штуки)
+function BigSaleCard({ game }) {
+  if (!game) return (
+    <div className="big-card">
+      <div className="big-card-thumb" />
+      <div className="big-card-info">
+        <div className="empty-card" style={{ height: 60 }}>
+          <span className="empty-card-icon">🎮</span><span>No data yet</span>
+        </div>
+      </div>
+    </div>
+  );
+  return (
+    <div className="big-card">
+      {/* Games.HeaderImageUrl */}
+      <div className="big-card-thumb" style={game.headerUrl ? { backgroundImage: `url(${game.headerUrl})` } : {}} />
+      <div className="big-card-info">
+        <div className="big-card-name">{game.title}</div>
+        <div className="big-card-meta">{game.meta || ""}</div>
+        <div className="big-card-bottom">
+          {game.discountPct > 0 && <span className="price-badge">-{game.discountPct}%</span>}
+          <div className="price-row">
+            {game.discountPct > 0 && <span className="price-old">${game.oldPrice}</span>}
+            <span className="price-new">${game.price}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// карточка бесплатной игры
+function FreeCard({ game }) {
+  if (!game) return (
+    <div className="free-card">
+      <div className="free-thumb" />
+      <div className="free-info">
+        <div className="empty-card" style={{ height: 60 }}>
+          <span className="empty-card-icon">🎁</span><span>No data yet</span>
+        </div>
+      </div>
+    </div>
+  );
+  return (
+    <div className="free-card">
+      <div className="free-thumb" style={game.coverUrl ? { backgroundImage: `url(${game.coverUrl})` } : {}} />
+      <div className="free-info">
+        <div className="free-name">{game.title}</div>
+        {/* даты раздачи — берёшь из API */}
+        <div className="free-dates">{game.freeUntil || "Available now"}</div>
+        <span className="free-tag">Free now</span>
+      </div>
+    </div>
+  );
+}
+
+// strip карточка (Fortnite-style 3 варианта)
+function StripCard({ game }) {
+  return (
+    <div
+      className="strip-card"
+      style={game?.headerUrl ? { backgroundImage: `url(${game.headerUrl})` } : {}}
+    >
+      <div className="strip-overlay" />
+      <div className="strip-content">
+        <div className="strip-title">{game?.title || "Coming soon"}</div>
+        <div className="strip-sub">{game?.subtitle || ""}</div>
+        <button className="strip-btn">{game?.btnLabel || "Get now"}</button>
+      </div>
+    </div>
+  );
+}
+
+// строка в списке (Top Sellers / Most Played / Upcoming)
+function ListItem({ num, game }) {
+  if (!game) return (
+    <div className="list-item">
+      <span className="list-num">{num}</span>
+      <div className="list-thumb skeleton" style={{ width: 40, height: 40 }} />
+      <div className="list-info">
+        <div className="skeleton" style={{ height: 12, width: "70%", marginBottom: 4 }} />
+        <div className="skeleton" style={{ height: 10, width: "40%" }} />
+      </div>
+    </div>
+  );
+  const isFree = game.price === 0 || game.price === "Free";
+  return (
+    <div className="list-item">
+      <span className="list-num">{num}</span>
+      <div className="list-thumb" style={game.coverUrl ? { backgroundImage: `url(${game.coverUrl})` } : {}} />
+      <div className="list-info">
+        <div className="list-name">{game.title}</div>
+        <div className={`list-price ${isFree ? "free" : ""}`}>
+          {isFree ? "Free" : `$${game.price}`}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="footer">
+      <div className="footer-inner">
+        <div className="footer-top">
+          <div className="footer-socials">
+            <span className="footer-social">f</span>
+            <span className="footer-social">𝕏</span>
+            <span className="footer-social">▶</span>
+          </div>
+          <div className="footer-logo">V</div>
+          <button className="footer-up" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>↑</button>
+        </div>
+        <p className="footer-copy">
+          © 2025 Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries.<br />
+          VAT included in all prices where applicable.
+        </p>
+        <div className="footer-links">
+          {["Terms of service","Jobs","Rules","Contracts","Gift cards","Facebook","Twitter"].map(l => (
+            <a key={l} className="footer-link">{l}</a>
+          ))}
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// ГЛАВНЫЙ КОМПОНЕНТ
+//
+// Все массивы пустые — бекендер заполняет через useEffect:
+//
+// useEffect(() => {
+//   fetch('/api/games/featured').then(r => r.json()).then(setHeroGame)
+//   fetch('/api/games/discover').then(r => r.json()).then(setDiscoverGames)
+//   ...и т.д.
+// }, [])
+// ─────────────────────────────────────────────────────────────
+
+export default function StorePage() {
+
+  // каждый стейт — один запрос к API
+  const [heroGame,      setHeroGame]      = useState(null);   // GET /api/games/featured
+  const [discoverGames, setDiscoverGames] = useState([]);     // GET /api/games/discover        (6 штук)
+  const [stripGames,    setStripGames]    = useState([]);     // GET /api/games/strip           (3 штуки — fortnite-style)
+  const [saleGames,     setSaleGames]     = useState([]);     // GET /api/games/sale-spotlight  (6 штук)
+  const [bigSaleGames,  setBigSaleGames]  = useState([]);     // GET /api/games/featured-sale   (3 штуки)
+  const [freeGames,     setFreeGames]     = useState([]);     // GET /api/games/free            (3 штуки)
+  const [topSellers,    setTopSellers]    = useState([]);     // GET /api/games/top-sellers     (7 штук)
+  const [mostPlayed,    setMostPlayed]    = useState([]);     // GET /api/games/most-played     (7 штук)
+  const [upcoming,      setUpcoming]      = useState([]);     // GET /api/games/upcoming        (7 штук)
+  const [popularGames,  setPopularGames]  = useState([]);     // GET /api/games/popular         (10 штук)
+  const [newGames,      setNewGames]      = useState([]);     // GET /api/games/new             (6 штук)
+  const [page,          setPage]          = useState(1);
+
+  // заглушка — 6 пустых слотов
+  const slots6 = Array(6).fill(null);
+  const slots3 = Array(3).fill(null);
+  const slots7 = Array(7).fill(null);
+  const slots10 = Array(10).fill(null);
+
+  // объединяем данные с пустыми слотами
+  const fill = (data, count) => {
+    const slots = Array(count).fill(null);
+    return slots.map((_, i) => data[i] || null);
+  };
+
+  return (
+    <>
+      <style>{css}</style>
+      <Navbar />
+
+      <div className="page">
+
+        {/* ── HERO ── */}
+        <div className="hero">
+          {/* Games.HeaderImageUrl */}
+          <div
+            className="hero-img"
+            style={heroGame?.headerUrl ? { backgroundImage: `url(${heroGame.headerUrl})` } : { background: "#1a1a2a" }}
+          />
+          <div className="hero-overlay" />
+          {heroGame ? (
+            <div className="hero-content">
+              <div className="hero-badge">Featured game</div>
+              {/* Games.Title */}
+              <div className="hero-title">{heroGame.title}</div>
+              <button className="hero-btn">
+                {heroGame.price === 0 ? "Play for free" : `Buy — $${heroGame.price}`}
+              </button>
+            </div>
+          ) : (
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "#333", fontSize: 13 }}>
+              Featured game will appear here
+            </div>
+          )}
+          <div className="hero-dots">
+            {[0,1,2,3].map(i => <div key={i} className={`hero-dot ${i === 0 ? "active" : ""}`} />)}
+          </div>
+        </div>
+
+        {/* ── DISCOVER ── */}
+        <div className="section">
+          <SectionHead title="Discover Something New" onMore={() => {}} />
+          <div className="grid-6">
+            {fill(discoverGames, 6).map((g, i) => <GameCard key={i} game={g} />)}
+          </div>
+        </div>
+
+        {/* ── FEATURED STRIP (3 варианта одной игры) ── */}
+        <div className="strip">
+          {fill(stripGames, 3).map((g, i) => <StripCard key={i} game={g} />)}
+        </div>
+
+        {/* ── SALE SPOTLIGHT ── */}
+        <div className="section">
+          <SectionHead title="#Game Sale Spotlight" onMore={() => {}} />
+          <div className="grid-6">
+            {fill(saleGames, 6).map((g, i) => <SaleCard key={i} game={g} />)}
+          </div>
+        </div>
+
+        {/* ── 3 БОЛЬШИЕ КАРТОЧКИ СО СКИДКАМИ ── */}
+        <div className="grid-3" style={{ marginBottom: 36 }}>
+          {fill(bigSaleGames, 3).map((g, i) => <BigSaleCard key={i} game={g} />)}
+        </div>
+
+        {/* ── FREE GAMES ── */}
+        <div className="section">
+          <div className="free-header">
+            <div className="free-header-left">
+              <div className="free-icon">🎁</div>
+              Free games
+            </div>
+            <button className="section-more">View more</button>
+          </div>
+          <div className="grid-3">
+            {fill(freeGames, 3).map((g, i) => <FreeCard key={i} game={g} />)}
+          </div>
+        </div>
+
+        {/* ── ПРОМО БАННЕР ПРИЛОЖЕНИЯ ── */}
+        <div className="promo">
+          <div className="promo-left">
+            <div className="promo-icon">🖥️</div>
+            <div className="promo-text">
+              <h3>Get the app</h3>
+              <p>Install our app and play anywhere — on desktop, tablet or mobile.</p>
+            </div>
+          </div>
+          <button className="promo-btn">Download now</button>
+        </div>
+
+        {/* ── TOP SELLERS / MOST PLAYED / UPCOMING ── */}
+        <div className="grid-lists" style={{ marginBottom: 36 }}>
+          <div>
+            <div className="list-title">Top Sellers</div>
+            {fill(topSellers, 7).map((g, i) => <ListItem key={i} num={i + 1} game={g} />)}
+          </div>
+          <div>
+            <div className="list-title">Most Played</div>
+            {fill(mostPlayed, 7).map((g, i) => <ListItem key={i} num={i + 1} game={g} />)}
+          </div>
+          <div>
+            <div className="list-title">Top Upcoming Wishlist</div>
+            {fill(upcoming, 7).map((g, i) => <ListItem key={i} num={i + 1} game={g} />)}
+          </div>
+        </div>
+
+        {/* ── POPULAR GAMES ── */}
+        <div className="section">
+          <SectionHead title="Popular Games" onMore={() => {}} />
+          <div className="grid-5">
+            {fill(popularGames, 10).map((g, i) => (
+              <div key={i} className="popular-card" style={{ background: "#1e1e1e", borderRadius: 5, overflow: "hidden", border: "1px solid rgba(255,255,255,0.06)", cursor: "pointer" }}>
+                <GameCard game={g} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── NEW ON THIS STORE ── */}
+        <div className="section">
+          <SectionHead title="New on This Store" onMore={() => {}} />
+          <div className="grid-6">
+            {fill(newGames, 6).map((g, i) => <GameCard key={i} game={g} />)}
+          </div>
+        </div>
+
+        {/* ── ПАГИНАЦИЯ ── */}
+        <div className="pagination">
+          <button className="pg-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>‹ Previous</button>
+          {[1,2,3,4,5,6].map(p => (
+            <button key={p} className={`pg-btn ${page === p ? "active" : ""}`} onClick={() => setPage(p)}>{p}</button>
+          ))}
+          <span className="pg-btn" style={{ cursor: "default" }}>...</span>
+          <button className="pg-btn">198</button>
+          <button className="pg-btn" onClick={() => setPage(p => p + 1)}>Next ›</button>
+        </div>
+
+      </div>
+
+      <Footer />
+    </>
+  );
+}
