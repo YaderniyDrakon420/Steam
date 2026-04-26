@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useContext } from "react";
-import { AuthContext } from "../context/AuthContext"; // Импортируем контекст
+import { AuthContext } from "../context/AuthContext";
 
 const navStyles = `
   .navbar {
@@ -53,7 +53,9 @@ const navStyles = `
   }
   
   .nav-right { margin-left: auto; display: flex; align-items: center; gap: 15px; }
-  .nav-icons { display: flex; gap: 12px; color: #8f98a0; font-size: 15px; cursor: pointer; }
+  .nav-icons { display: flex; gap: 12px; color: #8f98a0; font-size: 15px; }
+  .nav-icon-link { color: inherit; text-decoration: none; transition: color 0.15s; cursor: pointer; }
+  .nav-icon-link:hover, .nav-icon-link.active { color: #fff; }
   
   .nav-signin, .nav-logout { 
     font-size: 12px; 
@@ -66,7 +68,7 @@ const navStyles = `
     font-family: inherit;
   }
   .nav-signin:hover, .nav-logout:hover { text-decoration: underline; }
-  .nav-logout { color: #e84040; } /* Сделаем выход красным для отличия */
+  .nav-logout { color: #e84040; }
 
   .nav-download { 
     background: linear-gradient(to bottom, #75b022, #588a1b); 
@@ -83,11 +85,11 @@ const navStyles = `
 export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const auth = useContext(AuthContext); // Подключаем данные об авторизации
+  const auth = useContext(AuthContext);
 
   const handleLogout = () => {
-    auth?.logout(); // Вызываем выход из контекста
-    navigate("/");  // Уводим на главную
+    auth?.logout();
+    navigate("/");
   };
 
   return (
@@ -99,9 +101,16 @@ export default function Navbar() {
         </Link>
         
         <div className="nav-links">
+          {/* Теперь "/" ведет в Магазин */}
           <Link 
             to="/" 
             className={`nav-link ${location.pathname === "/" ? "active" : ""}`}
+          >
+            Store
+          </Link>
+          <Link 
+            to="/news" 
+            className={`nav-link ${location.pathname === "/news" ? "active" : ""}`}
           >
             News
           </Link>
@@ -112,7 +121,6 @@ export default function Navbar() {
             Support
           </Link>
           
-          {/* Показываем ссылку на Профиль только если вошли */}
           {auth?.isAuthenticated && (
             <Link 
               to="/profile" 
@@ -127,13 +135,17 @@ export default function Navbar() {
 
         <div className="nav-right">
           <div className="nav-icons">
-            <span>⚙</span>
-            <span>♡</span>
-            {/* Иконка корзины видна всем, но логику доступа к ней мы добавим позже */}
-            <span>🛒</span>
+            <span className="nav-icon-link">⚙</span>
+            <span className="nav-icon-link">♡</span>
+            {/* Ссылка на корзину */}
+            <Link 
+              to="/cart" 
+              className={`nav-icon-link ${location.pathname === "/cart" ? "active" : ""}`}
+            >
+              🛒
+            </Link>
           </div>
 
-          {/* Логика переключения кнопок */}
           {auth?.isAuthenticated ? (
             <button onClick={handleLogout} className="nav-logout">
               Logout

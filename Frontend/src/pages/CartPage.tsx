@@ -1,0 +1,627 @@
+import React, { useState } from "react";
+
+const css = `
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #1b2838; color: #c6d4df; font-family: Arial, sans-serif; min-height: 100vh; }
+
+  .navbar {
+    background: #171a21; height: 52px; display: flex; align-items: center;
+    padding: 0 20px; gap: 20px; position: sticky; top: 0; z-index: 100;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .nav-logo { font-size: 18px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  .nav-logo span { font-size: 11px; letter-spacing: 2px; color: #8f98a0; font-weight: 400; }
+  .nav-links { display: flex; gap: 4px; }
+  .nav-link { font-size: 12px; color: #8f98a0; padding: 6px 10px; border-radius: 3px; cursor: pointer; background: none; border: none; }
+  .nav-link:hover { color: #fff; }
+  .nav-search { max-width: 200px; background: #2a3f55; border: none; border-radius: 3px; padding: 6px 10px; color: #c6d4df; font-size: 12px; outline: none; }
+  .nav-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .nav-icons { display: flex; gap: 12px; color: #8f98a0; font-size: 15px; cursor: pointer; }
+  .nav-icons span { cursor: pointer; transition: color 0.2s; }
+  .nav-icons span:hover { color: #fff; }
+  .nav-download { background: linear-gradient(to bottom, #75b022, #588a1b); color: #d2e885; font-size: 12px; font-weight: 700; border: none; border-radius: 3px; padding: 7px 14px; cursor: pointer; }
+  @media (max-width: 600px) { .nav-links { display: none; } }
+
+  .content { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; width: 100%; }
+
+  .cart-section, .wishlist-section, .payment-section, .thankyou-section {
+    background: #16202d;
+    border-radius: 8px;
+    padding: 24px;
+  }
+  .cart-title, .wishlist-title, .payment-title, .thankyou-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 24px;
+    border-left: 3px solid #66c0f4;
+    padding-left: 12px;
+  }
+  .wishlist-sort {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+  }
+  .sort-select {
+    background: #2a3f55;
+    border: none;
+    color: #c6d4df;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .cart-item, .wishlist-item {
+    display: flex;
+    gap: 20px;
+    padding: 20px 0;
+    border-bottom: 1px solid #2a3f55;
+  }
+  .item-image {
+    width: 120px;
+    height: 120px;
+    background: #1e2a36;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #5a6a7a;
+    font-size: 12px;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .item-info { flex: 1; }
+  .item-title { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+  .item-reviews { font-size: 12px; color: #8f98a0; margin-bottom: 8px; }
+  .item-reviews span { color: #66c0f4; }
+  .item-date { font-size: 12px; color: #8f98a0; margin-bottom: 12px; }
+  .item-actions { display: flex; gap: 16px; }
+  .item-action { font-size: 12px; color: #8f98a0; background: none; border: none; cursor: pointer; transition: color 0.2s; }
+  .item-action:hover { color: #66c0f4; }
+  .item-price { font-size: 18px; font-weight: 700; color: #fff; text-align: right; min-width: 100px; }
+  .cart-total { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; margin-top: 10px; }
+  .cart-tax { font-size: 11px; color: #5a6a7a; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #2a3f55; }
+  .checkout-btn, .place-order-btn {
+    background: linear-gradient(to bottom, #75b022, #588a1b);
+    color: #d2e885;
+    font-size: 16px;
+    font-weight: 700;
+    border: none;
+    border-radius: 4px;
+    padding: 12px 32px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+  }
+  .empty-message { text-align: center; padding: 60px 20px; color: #8f98a0; font-size: 16px; }
+
+  .payment-methods {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+  .payment-method {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    background: #1e2a36;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: background 0.2s;
+  }
+  .payment-method.selected {
+    background: #2a4a6a;
+    outline: 1px solid #66c0f4;
+  }
+  .payment-method img {
+    width: 40px;
+    height: auto;
+  }
+  .card-details {
+    background: #1e2a36;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .card-row {
+    margin-bottom: 16px;
+  }
+  .card-row label {
+    display: block;
+    font-size: 12px;
+    color: #8f98a0;
+    margin-bottom: 4px;
+  }
+  .card-row input {
+    width: 100%;
+    background: #2a3f55;
+    border: 1px solid #3a5a7a;
+    border-radius: 4px;
+    padding: 10px;
+    color: #c6d4df;
+    font-size: 14px;
+    outline: none;
+  }
+  .card-row input:focus { border-color: #66c0f4; }
+  .row-2cols {
+    display: flex;
+    gap: 16px;
+  }
+  .row-2cols > div { flex: 1; }
+  .save-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    font-size: 13px;
+  }
+  .order-summary {
+    background: #1e2a36;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .summary-line {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+  .summary-total {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 700;
+    font-size: 18px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #3a5a7a;
+  }
+  .legal-text {
+    font-size: 11px;
+    color: #8f98a0;
+    margin: 16px 0;
+    line-height: 1.4;
+  }
+  .thankyou-message {
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .thankyou-message h2 {
+    color: #fff;
+    margin-bottom: 16px;
+  }
+  .thankyou-message p {
+    margin-bottom: 12px;
+  }
+  .footer {
+    background: #171a21; border-top: 1px solid rgba(255,255,255,0.05);
+    padding: 24px 20px; margin-top: auto;
+  }
+  .footer-inner { max-width: 860px; margin: 0 auto; }
+  .footer-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .footer-socials { display: flex; gap: 14px; font-size: 18px; color: #8f98a0; cursor: pointer; }
+  .footer-up { background: rgba(255,255,255,0.08); border: none; border-radius: 3px; color: #8f98a0; padding: 5px 10px; cursor: pointer; }
+  .footer-copy { font-size: 11px; color: #5a6a7a; line-height: 1.6; margin-bottom: 12px; }
+  .footer-links { display: flex; flex-wrap: wrap; gap: 12px; }
+  .footer-link { font-size: 11px; color: #5a6a7a; cursor: pointer; text-decoration: none; }
+  .footer-link:hover { color: #c6d4df; }
+`;
+
+// ==================== ИНТЕРФЕЙСЫ ====================
+interface Game {
+  id: number;
+  title: string;
+  reviews: string;
+  releaseDate: string;
+  price: number;
+  image: string | null;
+}
+
+// ==================== ДАННЫЕ ====================
+const SAMPLE_GAME: Game = {
+  id: 1,
+  title: "The End of the Sun",
+  reviews: "Mostly Positive",
+  releaseDate: "2025-05-20",
+  price: 390.00,
+  image: null
+};
+const EXTRA_GAMES: Game[] = [
+  { id: 2, title: "Starfield", reviews: "Mixed", releaseDate: "2023-09-06", price: 1299.00, image: null },
+  { id: 3, title: "Cyberpunk 2077", reviews: "Very Positive", releaseDate: "2020-12-10", price: 599.00, image: null }
+];
+
+// ==================== СТРАНИЦА "СПАСИБО" ====================
+interface ThankYouProps { onBrowseShop: () => void; }
+const ThankYouPage: React.FC<ThankYouProps> = ({ onBrowseShop }) => {
+  return (
+    <div className="thankyou-section">
+      <h1 className="thankyou-title">My Wishlist</h1>
+      <div className="thankyou-message">
+        <h2>Thank you for buying our games!</h2>
+        <p>An email receipt has been sent to you.</p>
+        <p>If there is anything else you need, feel free to browse our shop!</p>
+        <button onClick={onBrowseShop} style={{ marginTop: 20, background: "#66c0f4", border: "none", padding: "8px 20px", borderRadius: 4, color: "#1b2838", cursor: "pointer" }}>Browse Shop</button>
+      </div>
+    </div>
+  );
+};
+
+// ==================== КОМПОНЕНТ ОПЛАТЫ ====================
+interface PaymentProps {
+  cartItems: Game[];
+  onPlaceOrder: () => void;
+  onBackToCart: () => void;
+}
+const PaymentPage: React.FC<PaymentProps> = ({ cartItems, onPlaceOrder, onBackToCart }) => {
+  const [selectedMethod, setSelectedMethod] = useState("visa");
+  const [saveMethod, setSaveMethod] = useState(false);
+  const [cardNumber, setCardNumber] = useState("");
+  const [nameOnCard, setNameOnCard] = useState("");
+  const [expiration, setExpiration] = useState("");
+  const [cvv, setCvv] = useState("");
+  const [agreeTerms, setAgreeTerms] = useState(false);
+
+  const [errors, setErrors] = useState({
+    cardNumber: "",
+    nameOnCard: "",
+    expiration: "",
+    cvv: "",
+    agreeTerms: ""
+  });
+
+  const subtotal = cartItems.reduce((sum: number, item: Game) => sum + item.price, 0);
+  const tax = subtotal * 0.05;
+  const total = subtotal + tax;
+
+  const validateCardNumber = (value: string) => {
+    const cleaned = value.replace(/\s/g, "");
+    if (!cleaned) return "Card number is required";
+    if (!/^\d{16}$/.test(cleaned)) return "Card number must be 16 digits";
+    return "";
+  };
+  const validateNameOnCard = (value: string) => {
+    if (!value.trim()) return "Name on card is required";
+    if (value.trim().length < 3) return "Name must be at least 3 characters";
+    return "";
+  };
+  const validateExpiration = (value: string) => {
+    if (!value) return "Expiration date is required";
+    if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(value)) return "Use MM/YY format";
+    const [month, year] = value.split("/");
+    const now = new Date();
+    const currentYear = now.getFullYear() % 100;
+    const currentMonth = now.getMonth() + 1;
+    const expYear = parseInt(year, 10);
+    const expMonth = parseInt(month, 10);
+    if (expYear < currentYear || (expYear === currentYear && expMonth < currentMonth)) {
+      return "Card has expired";
+    }
+    return "";
+  };
+  const validateCvv = (value: string) => {
+    if (!value) return "CVV is required";
+    if (!/^\d{3}$/.test(value)) return "CVV must be 3 digits";
+    return "";
+  };
+  const validateAgreeTerms = (value: boolean) => {
+    if (!value) return "You must agree to the terms";
+    return "";
+  };
+
+  const validateField = (field: string, value: any) => {
+    let error = "";
+    switch (field) {
+      case "cardNumber": error = validateCardNumber(value); break;
+      case "nameOnCard": error = validateNameOnCard(value); break;
+      case "expiration": error = validateExpiration(value); break;
+      case "cvv": error = validateCvv(value); break;
+      case "agreeTerms": error = validateAgreeTerms(value); break;
+      default: break;
+    }
+    setErrors(prev => ({ ...prev, [field]: error }));
+  };
+
+  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\s/g, "").slice(0, 16);
+    let formatted = "";
+    for (let i = 0; i < value.length; i++) {
+      if (i > 0 && i % 4 === 0) formatted += " ";
+      formatted += value[i];
+    }
+    setCardNumber(formatted);
+    validateField("cardNumber", value);
+  };
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setNameOnCard(value);
+    validateField("nameOnCard", value);
+  };
+  const handleExpirationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, "").slice(0, 4);
+    if (value.length >= 3) {
+      value = value.slice(0, 2) + "/" + value.slice(2);
+    }
+    setExpiration(value);
+    validateField("expiration", value);
+  };
+  const handleCvvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, "").slice(0, 3);
+    setCvv(value);
+    validateField("cvv", value);
+  };
+  const handleAgreeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
+    setAgreeTerms(checked);
+    validateField("agreeTerms", checked);
+  };
+
+  const isFormValid = () => {
+    return (
+      validateCardNumber(cardNumber.replace(/\s/g, "")) === "" &&
+      validateNameOnCard(nameOnCard) === "" &&
+      validateExpiration(expiration) === "" &&
+      validateCvv(cvv) === "" &&
+      agreeTerms === true
+    );
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cardNumClean = cardNumber.replace(/\s/g, "");
+    validateField("cardNumber", cardNumClean);
+    validateField("nameOnCard", nameOnCard);
+    validateField("expiration", expiration);
+    validateField("cvv", cvv);
+    validateField("agreeTerms", agreeTerms);
+
+    if (isFormValid()) {
+      onPlaceOrder();
+    }
+  };
+
+  return (
+    <div className="payment-section">
+      <h1 className="payment-title">CHECKOUT</h1>
+
+      <div className="payment-methods">
+        <div className={`payment-method ${selectedMethod === "visa" ? "selected" : ""}`} onClick={() => setSelectedMethod("visa")}>
+          <img src="https://cdn.jsdelivr.net/gh/amcharts/amcharts4@4.10.26/dist/images/visa.png" alt="Visa" width="40" />
+          Visa
+        </div>
+        <div className={`payment-method ${selectedMethod === "mastercard" ? "selected" : ""}`} onClick={() => setSelectedMethod("mastercard")}>
+          <img src="https://cdn.jsdelivr.net/gh/amcharts/amcharts4@4.10.26/dist/images/mastercard.png" alt="Mastercard" width="40" />
+          Mastercard
+        </div>
+      </div>
+
+      <div className="card-details">
+        <h3 style={{ marginBottom: 16, fontSize: 16 }}>CARD DETAILS</h3>
+        <div className="card-row">
+          <label>Card number</label>
+          <input type="text" placeholder="1234 5678 9012 3456" value={cardNumber} onChange={handleCardNumberChange} style={{ borderColor: errors.cardNumber ? "#ff6b6b" : undefined }} />
+          {errors.cardNumber && <div style={{ color: "#ff6b6b", fontSize: 11, marginTop: 4 }}>{errors.cardNumber}</div>}
+        </div>
+        <div className="card-row">
+          <label>Name on card {errors.nameOnCard && <span style={{ color: "#ff6b6b" }}>(an error was made)</span>}</label>
+          <input type="text" placeholder="John Doe" value={nameOnCard} onChange={handleNameChange} style={{ borderColor: errors.nameOnCard ? "#ff6b6b" : undefined }} />
+          {errors.nameOnCard && <div style={{ color: "#ff6b6b", fontSize: 11, marginTop: 4 }}>{errors.nameOnCard}</div>}
+        </div>
+        <div className="row-2cols">
+          <div>
+            <label>Expiration</label>
+            <input type="text" placeholder="MM/YY" value={expiration} onChange={handleExpirationChange} style={{ borderColor: errors.expiration ? "#ff6b6b" : undefined }} />
+            {errors.expiration && <div style={{ color: "#ff6b6b", fontSize: 11, marginTop: 4 }}>{errors.expiration}</div>}
+          </div>
+          <div>
+            <label>CVV</label>
+            <input type="text" placeholder="123" value={cvv} onChange={handleCvvChange} style={{ borderColor: errors.cvv ? "#ff6b6b" : undefined }} />
+            {errors.cvv && <div style={{ color: "#ff6b6b", fontSize: 11, marginTop: 4 }}>{errors.cvv}</div>}
+          </div>
+        </div>
+      </div>
+
+      <div className="save-checkbox">
+        <input type="checkbox" checked={saveMethod} onChange={e => setSaveMethod(e.target.checked)} />
+        <span>Save this payment method for future purchase?</span>
+      </div>
+
+      <div className="order-summary">
+        <h3 style={{ marginBottom: 16, fontSize: 16 }}>ORDER SUMMARY</h3>
+        {cartItems.map(item => (
+          <div key={item.id} className="summary-line">
+            <span>{item.title}</span>
+            <span>UAH {item.price.toFixed(2)}</span>
+          </div>
+        ))}
+        <div className="summary-line">
+          <span>Price</span>
+          <span>UAH {subtotal.toFixed(2)}</span>
+        </div>
+        <div className="summary-line">
+          <span>Taxed (5%)</span>
+          <span>UAH {tax.toFixed(2)}</span>
+        </div>
+        <div className="summary-total">
+          <span>Total</span>
+          <span>UAH {total.toFixed(2)}</span>
+        </div>
+      </div>
+
+      <div className="legal-text">
+        <label style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+          <input type="checkbox" checked={agreeTerms} onChange={handleAgreeChange} />
+          I am 13 years of age or older and agree to the terms...
+        </label>
+        {errors.agreeTerms && <div style={{ color: "#ff6b6b", fontSize: 11 }}>{errors.agreeTerms}</div>}
+      </div>
+
+      <button className="place-order-btn" onClick={handleSubmit}>PLACE ORDER</button>
+      <button onClick={onBackToCart} style={{ marginTop: 12, background: "none", border: "none", color: "#66c0f4", cursor: "pointer" }}>← Back to cart</button>
+    </div>
+  );
+};
+
+// ==================== СТРАНИЦА КОРЗИНЫ ====================
+interface CartProps {
+  cartItems: Game[];
+  onRemoveFromCart: (id: number) => void;
+  onMoveToWishlist: (item: Game) => void;
+  onCheckout: () => void;
+}
+const CartPage: React.FC<CartProps> = ({ cartItems, onRemoveFromCart, onMoveToWishlist, onCheckout }) => {
+  const total = cartItems.reduce((sum: number, item: Game) => sum + item.price, 0);
+  if (cartItems.length === 0) {
+    return (
+      <div className="cart-section">
+        <h1 className="cart-title">My Cart</h1>
+        <div className="empty-message">Your cart is empty</div>
+      </div>
+    );
+  }
+  return (
+    <div className="cart-section">
+      <h1 className="cart-title">My Cart</h1>
+      {cartItems.map(item => (
+        <div key={item.id} className="cart-item">
+          <div className="item-image">{item.image ? <img src={item.image} alt="" /> : "Image"}</div>
+          <div className="item-info">
+            <div className="item-title">Base Game<br />{item.title}</div>
+            <div className="item-reviews">All Reviews: <span>{item.reviews}</span></div>
+            <div className="item-date">Release Date: {item.releaseDate.split("-").reverse().join(".")}</div>
+            <div className="item-actions">
+              <button className="item-action" onClick={() => onRemoveFromCart(item.id)}>Remove</button>
+              <button className="item-action" onClick={() => onMoveToWishlist(item)}>Move to wishlist</button>
+            </div>
+          </div>
+          <div className="item-price">UAH {item.price.toFixed(2)}</div>
+        </div>
+      ))}
+      <div className="cart-total">
+        <span>Total:</span>
+        <span>UAH {total.toFixed(2)}</span>
+      </div>
+      <button className="checkout-btn" onClick={onCheckout}>Check Out</button>
+    </div>
+  );
+};
+
+// ==================== СТРАНИЦА ВИШЛИСТА ====================
+interface WishlistProps {
+  wishlistItems: Game[];
+  onRemoveFromWishlist: (id: number) => void;
+  onAddToCart: (item: Game) => void;
+  sortType: string;
+  setSortType: (val: string) => void;
+}
+const WishlistPage: React.FC<WishlistProps> = ({ wishlistItems, onRemoveFromWishlist, onAddToCart, sortType, setSortType }) => {
+  const getSortedItems = () => {
+    const items = [...wishlistItems];
+    if (sortType === "price-asc") return items.sort((a, b) => a.price - b.price);
+    if (sortType === "price-desc") return items.sort((a, b) => b.price - a.price);
+    if (sortType === "date-desc") return items.sort((a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime());
+    return items;
+  };
+  const sorted = getSortedItems();
+
+  if (sorted.length === 0) {
+    return (
+      <div className="wishlist-section">
+        <h1 className="wishlist-title">My Wishlist</h1>
+        <div className="empty-message">Your wishlist is empty</div>
+      </div>
+    );
+  }
+  return (
+    <div className="wishlist-section">
+      <h1 className="wishlist-title">My Wishlist</h1>
+      <div className="wishlist-sort">
+        <select className="sort-select" value={sortType} onChange={e => setSortType(e.target.value)}>
+          <option value="price-asc">Sort by: Price (low to high)</option>
+          <option value="price-desc">Sort by: Price (high to low)</option>
+          <option value="date-desc">Sort by: Release date (newest first)</option>
+        </select>
+      </div>
+      {sorted.map(item => (
+        <div key={item.id} className="wishlist-item">
+          <div className="item-image">{item.image ? <img src={item.image} alt="" /> : "Image"}</div>
+          <div className="item-info">
+            <div className="item-title">Base Game<br />{item.title}</div>
+            <div className="item-actions">
+              <button className="item-action" onClick={() => onRemoveFromWishlist(item.id)}>Remove</button>
+              <button className="item-action" onClick={() => onAddToCart(item)}>Add To Cart</button>
+            </div>
+          </div>
+          <div className="item-price">UAH {item.price.toFixed(2)}</div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// ==================== НАВБАР ====================
+interface NavbarProps {
+  currentPage: string;
+  onPageChange: (page: string) => void;
+}
+const Navbar: React.FC<NavbarProps> = ({ currentPage, onPageChange }) => {
+  return (
+    <nav className="navbar">
+      <div className="nav-logo" onClick={() => onPageChange("news")}>▼ <span>STORE</span></div>
+      <div className="nav-links">
+        <button className="nav-link" onClick={() => onPageChange("news")} style={{ color: currentPage === "news" ? "#fff" : "#8f98a0" }}>News</button>
+      </div>
+      <div className="nav-right">
+        <div className="nav-icons">
+          <span onClick={() => onPageChange("wishlist")}>♡</span>
+          <span onClick={() => onPageChange("cart")}>🛒</span>
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+// ==================== ФУТЕР ====================
+const Footer: React.FC = () => (
+  <footer className="footer">
+    <div className="footer-inner">
+      <p className="footer-copy">© 2026 Valve Corporation. All rights reserved.</p>
+    </div>
+  </footer>
+);
+
+// ==================== ГЛАВНЫЙ КОМПОНЕНТ ====================
+export default function App() {
+  const [page, setPage] = useState<string>("cart");
+  const [sortType, setSortType] = useState<string>("price-asc");
+  const [cartItems, setCartItems] = useState<Game[]>([{ ...SAMPLE_GAME, id: Date.now() }]);
+  const [wishlistItems, setWishlistItems] = useState<Game[]>(EXTRA_GAMES);
+
+  const addToCartFromWishlist = (item: Game) => {
+    setCartItems(prev => [...prev, { ...item, id: Date.now() }]);
+    setWishlistItems(prev => prev.filter(i => i.id !== item.id));
+  };
+  const moveToWishlistFromCart = (item: Game) => {
+    setWishlistItems(prev => [...prev, { ...item, id: Date.now() }]);
+    setCartItems(prev => prev.filter(i => i.id !== item.id));
+  };
+  const removeFromCart = (id: number) => setCartItems(prev => prev.filter(i => i.id !== id));
+  const removeFromWishlist = (id: number) => setWishlistItems(prev => prev.filter(i => i.id !== id));
+
+  return (
+    <>
+      <style>{css}</style>
+      <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+        <Navbar currentPage={page} onPageChange={setPage} />
+        <div className="content">
+          {page === "cart" && <CartPage cartItems={cartItems} onRemoveFromCart={removeFromCart} onMoveToWishlist={moveToWishlistFromCart} onCheckout={() => setPage("payment")} />}
+          {page === "wishlist" && <WishlistPage wishlistItems={wishlistItems} onRemoveFromWishlist={removeFromWishlist} onAddToCart={addToCartFromWishlist} sortType={sortType} setSortType={setSortType} />}
+          {page === "payment" && <PaymentPage cartItems={cartItems} onPlaceOrder={() => { setCartItems([]); setPage("thankyou"); }} onBackToCart={() => setPage("cart")} />}
+          {page === "thankyou" && <ThankYouPage onBrowseShop={() => setPage("cart")} />}
+        </div>
+        <Footer />
+      </div>
+    </>
+  );
+}
