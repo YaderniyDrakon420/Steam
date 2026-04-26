@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import GameSection from "../components/GameSection";
 
 // ─────────────────────────────────────────────────────────────
 // StorePage.tsx — Полная версия (C# + MS SQL Integration)
@@ -63,6 +64,57 @@ const css = `
   .list-thumb { width: 40px; height: 40px; border-radius: 4px; background-size: cover; background-position: center; }
 
   .footer { background: #111; border-top: 1px solid rgba(255,255,255,0.06); padding: 40px 20px; text-align: center; }
+
+  .grid-lists { 
+    display: grid; 
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 24px; 
+    margin-top: 40px;
+  }
+  .list-column { display: flex; flex-direction: column; gap: 8px; }
+  .list-title { 
+    font-size: 16px; 
+    font-weight: bold; 
+    color: #fff; 
+    margin-bottom: 12px; 
+    display: flex; 
+    align-items: center; 
+    gap: 5px; 
+    cursor: pointer;
+  }
+  .list-title:hover { color: #66c0f4; }
+  
+  .list-item { 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    padding: 8px; 
+    border-radius: 4px; 
+    transition: background 0.2s; 
+    cursor: pointer;
+  }
+  .list-item:hover { background: rgba(255,255,255,0.05); }
+  .list-item img { width: 45px; height: 60px; object-fit: cover; border-radius: 4px; }
+  .list-item-info { display: flex; flex-direction: column; gap: 2px; }
+  .list-item-name { color: #fff; font-size: 13px; font-weight: 500; }
+  .list-item-price { font-size: 12px; color: #8f98a0; }
+  .price-discount { color: #beee11; font-weight: bold; }
+
+  /* Пагинация */
+  .pagination-wrap {
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+    gap: 15px; 
+    color: #8f98a0; 
+    padding: 20px 0;
+    user-select: none;
+  }
+  .pag-btn { cursor: pointer; transition: 0.2s; }
+  .pag-btn:hover { color: #fff; }
+  .pag-btn.disabled { color: #444; cursor: default; }
+  .pag-num { cursor: pointer; padding: 0 5px; }
+  .pag-num.active { color: #fff; font-weight: bold; }
 `;
 
 // ── Вспомогательные компоненты ──
@@ -75,32 +127,41 @@ function SectionHead({ title }: any) {
   );
 }
 
+function GameListColumn({ title, games }: { title: string, games: any[] }) {
+  const navigate = useNavigate();
+  return (
+    <div className="list-column">
+      <div className="list-title">{title} ›</div>
+      {games.map((g) => (
+        <div key={g.id} className="list-item" onClick={() => navigate(`/game/${g.id}`)}>
+          <img src={g.coverImageUrl} alt="" />
+          <div className="list-item-info">
+            <span className="list-item-name">{g.title}</span>
+            <div className="price-row" style={{fontSize: '12px'}}>
+               {g.discountPct > 0 && <span className="price-badge" style={{padding: '0 3px'}}>-{g.discountPct}%</span>}
+               <span className={g.price === 0 ? "game-price free" : "list-item-price"}>
+                 {g.price === 0 ? "Free" : `$${g.price}`}
+               </span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function GameCard({ game }: any) {
   const navigate = useNavigate();
-
-  // Если данных нет, рисуем заглушку
-  if (!game) {
-    return <div style={{ aspectRatio: '3/4', background: '#1a1a1a', borderRadius: 5 }} />;
-  }
-
+  if (!game) return <div style={{ aspectRatio: '3/4', background: '#1a1a1a', borderRadius: 5 }} />;
   const isFree = game.price === 0;
 
   return (
-    <div 
-      className="game-card" 
-      onClick={() => navigate(`/game/${game.id}`)} 
-      style={{ cursor: 'pointer' }}
-    >
-      <div 
-        className="game-thumb" 
-        style={{ backgroundImage: `url(${game.coverUrl})` }} 
-      />
+    <div className="game-card" onClick={() => navigate(`/game/${game.id}`)}>
+      <div className="game-thumb" style={{ backgroundImage: `url(${game.coverUrl})` }} />
       <div className="game-info">
         <div className="game-name">{game.title}</div>
         <div className="price-row">
-          {game.discountPct > 0 && (
-            <span className="price-badge">-{game.discountPct}%</span>
-          )}
+          {game.discountPct > 0 && <span className="price-badge">-{game.discountPct}%</span>}
           <span className={isFree ? "game-price free" : "price-new"}>
             {isFree ? "Free" : `$${game.price}`}
           </span>
@@ -113,7 +174,9 @@ function GameCard({ game }: any) {
 export default function StorePage() {
   const [allGames, setAllGames] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate(); // Инициализируем навигацию
+  const [currentPage, setCurrentPage] = useState(1);
+  const gamesPerPage = 6;
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch("https://localhost:7190/api/Games")
@@ -124,8 +187,8 @@ export default function StorePage() {
           title: g.title,
           price: g.price,
           discountPct: g.discountPercentage,
-          coverUrl: g.coverImageUrl,
-          // Сохраняем обе ссылки
+          coverImageUrl: g.coverImageUrl, 
+          coverUrl: g.coverImageUrl, 
           headerUrl: g.headerImageUrl,
           coverUrlFull: g.coverImageUrl 
         }));
@@ -141,8 +204,11 @@ export default function StorePage() {
 
   if (loading) return <div style={{ color: '#fff', padding: 100, textAlign: 'center' }}>Connecting to MS SQL Server...</div>;
 
-  // Берем первую игру для баннера
   const featuredGame = allGames[0];
+
+  // Логика пагинации для нижнего списка "Now On The Store"
+  const totalPages = Math.ceil(allGames.length / gamesPerPage);
+  const lastListGames = allGames.slice((currentPage - 1) * gamesPerPage, currentPage * gamesPerPage);
 
   return (
     <>
@@ -151,7 +217,6 @@ export default function StorePage() {
       <div className="page">
         {/* HERO BANNER */}
         <div className="hero">
-          {/* ИСПРАВЛЕНО: Если headerUrl пустой (null), используем coverUrl */}
           <div 
             className="hero-img" 
             style={{ 
@@ -164,12 +229,7 @@ export default function StorePage() {
           <div className="hero-content">
             <div style={{ fontSize: 10, color: '#888', letterSpacing: 2, marginBottom: 8 }}>FEATURED GAME</div>
             <div className="hero-title">{featuredGame?.title}</div>
-            
-            {/* ИСПРАВЛЕНО: Добавлен onClick для перехода на страницу игры */}
-            <button 
-              className="hero-btn" 
-              onClick={() => featuredGame && navigate(`/game/${featuredGame.id}`)}
-            >
+            <button className="hero-btn" onClick={() => featuredGame && navigate(`/game/${featuredGame.id}`)}>
               Buy Now
             </button>
           </div>
@@ -183,7 +243,7 @@ export default function StorePage() {
           </div>
         </div>
 
-        {/* Остальные секции (Sale Spotlight, Free Games и т.д.) остаются без изменений */}
+        {/* SALE SPOTLIGHT */}
         <div className="section">
           <SectionHead title="Game Sale Spotlight" />
           <div className="grid-6">
@@ -191,17 +251,14 @@ export default function StorePage() {
           </div>
         </div>
 
+        {/* FREE GAMES */}
         <div className="section">
           <div style={{ background: '#1e1e1e', padding: '15px', borderRadius: '8px', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ fontSize: '20px' }}>🎁</span> <b>Free Games</b>
           </div>
           <div className="grid-3">
             {fill(allGames.filter(g => g.price === 0).slice(0, 3), 3).map((g, i) => (
-              <div 
-                key={i} 
-                onClick={() => g && navigate(`/game/${g.id}`)} // Тоже делаем кликабельным
-                style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid #333', cursor: 'pointer' }}
-              >
+              <div key={i} onClick={() => g && navigate(`/game/${g.id}`)} style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid #333', cursor: 'pointer' }}>
                 <div style={{ height: 160, backgroundImage: `url(${g?.coverUrl})`, backgroundSize: 'cover' }} />
                 <div style={{ padding: 10, background: '#1e1e1e' }}>
                   <div style={{ fontSize: 13, fontWeight: 'bold' }}>{g?.title || "Upcoming Free Game"}</div>
@@ -209,6 +266,49 @@ export default function StorePage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* ТРИ КОЛОНКИ СПИСКОВ */}
+        <div className="grid-lists">
+          <GameListColumn title="Top Sellers" games={allGames.slice(0, 6)} />
+          <GameListColumn title="Most Played" games={allGames.slice(3, 9)} />
+          <GameListColumn title="Top Upcoming Wishlisted" games={allGames.slice(2, 8)} />
+        </div>
+
+        {/* СЕТКИ ПОД СПИСКАМИ */}
+        <div style={{ marginTop: '40px' }}>
+          <GameSection title="Popular Games" games={allGames.slice(0, 6)} />
+          <GameSection title="Recently Updated" games={allGames.slice(6, 12)} />
+          
+          {/* ПОСЛЕДНИЙ СПИСОК С ПАГИНАЦИЕЙ */}
+          <GameSection title="Now On The Store" games={lastListGames} />
+
+          {/* КОНТРОЛЛЕРЫ ПАГИНАЦИИ */}
+          <div className="pagination-wrap">
+            <span 
+              className={`pag-btn ${currentPage === 1 ? 'disabled' : ''}`}
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            >
+              &lt; Previous
+            </span>
+
+            {[...Array(totalPages)].map((_, i) => (
+              <span 
+                key={i} 
+                className={`pag-num ${currentPage === i + 1 ? 'active' : ''}`}
+                onClick={() => setCurrentPage(i + 1)}
+              >
+                {i + 1}
+              </span>
+            ))}
+
+            <span 
+              className={`pag-btn ${currentPage === totalPages ? 'disabled' : ''}`}
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            >
+              Next &gt;
+            </span>
           </div>
         </div>
       </div>
