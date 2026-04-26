@@ -45,9 +45,10 @@ public class ProfileController : ControllerBase
             .Select(ua => new {
                 id = ua.AchievementId,
                 title = ua.Achievement.Title,
+                description = ua.Achievement.Description,
                 rarityPct = ua.Achievement.RarityPercentage,
                 iconUrl = ua.Achievement.IconUrl,
-                unlocked = true // Так как мы берем из UserAchievements, они все разблокированы
+                unlocked = true
             })
             .ToListAsync();
 

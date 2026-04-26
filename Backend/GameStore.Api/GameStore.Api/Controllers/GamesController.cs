@@ -35,4 +35,11 @@ public class GamesController : ControllerBase
 
         return Ok(game);
     }
+
+    [HttpGet("search")]
+    public async Task<ActionResult<IEnumerable<Game>>> Search(string query)
+    {
+        var results = await _gameRepository.SearchGamesAsync(query);
+        return Ok(results);
+    }
 }

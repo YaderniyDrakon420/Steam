@@ -11,4 +11,5 @@ public interface IGameRepository
 {
     Task<IEnumerable<Game>> GetAllAsync();
     Task<Game?> GetByIdAsync(int id);
+    Task<IEnumerable<Game>> SearchGamesAsync(string searchTerm);
 }
