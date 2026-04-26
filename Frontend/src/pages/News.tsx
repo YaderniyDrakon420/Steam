@@ -92,13 +92,6 @@ export default function App() {
         {page === "discover" && <div style={{textAlign: 'center', marginTop: '50px'}}>Discover Page Content</div>}
         {page === "support" && <div style={{textAlign: 'center', marginTop: '50px'}}>Support Page Content</div>}
       </main>
-
-      {/* ФУТЕР */}
-      <footer className="footer">
-        <div className="footer-inner">
-          <p className="footer-copy">© 2026 Valve Corporation. All rights reserved.</p>
-        </div>
-      </footer>
     </div>
   );
 }

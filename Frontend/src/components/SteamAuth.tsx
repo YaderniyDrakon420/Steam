@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom"; 
+import { AuthContext } from "../context/AuthContext"; 
 
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Arial&display=swap');
@@ -98,13 +100,11 @@ const css = `
 
 const API_URL = "https://localhost:7190/api/auth";
 
-// Интерфейс для навигации
 type ScreenType = "login" | "register" | "success";
 interface PageProps {
   go: (screen: ScreenType) => void;
 }
 
-// Интерфейсы для ошибок
 interface LoginErrors { name?: string; pass?: string; }
 interface RegisterErrors { email?: string; nickname?: string; pass?: string; agreed?: string; }
 
@@ -125,6 +125,9 @@ function LoginPage({ go }: PageProps) {
   const [name, setName] = useState("");
   const [pass, setPass] = useState("");
   const [errs, setErrs] = useState<LoginErrors>({});
+  
+  const auth = useContext(AuthContext); 
+  const navigate = useNavigate(); 
 
   const submit = async () => {
     const e: LoginErrors = {};
@@ -140,8 +143,13 @@ function LoginPage({ go }: PageProps) {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        alert(`Успешный вход! Ник: ${data.nickname}, Баланс: ${data.balance}`);
+        const userData = await response.json(); // Ждем JSON от твоего C# бэкенда
+        
+        // ВАЖНО: передаем id в функцию login
+        // Если твой C# отдает Id с большой буквы, пиши userData.Id
+        auth?.login(userData.id); 
+        
+        navigate("/profile"); 
       } else {
         alert("Неверный логин или пароль");
       }
@@ -211,7 +219,10 @@ function RegisterPage({ go }: PageProps) {
       });
 
       if (response.ok) go("success");
-      else alert("Ошибка регистрации (возможно, email уже занят)");
+      else {
+        const errorData = await response.json();
+        alert(errorData.message || "Ошибка регистрации");
+      }
     } catch (err) {
       alert("Ошибка сети");
     }
