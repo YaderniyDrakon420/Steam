@@ -241,7 +241,6 @@ export default function Navbar() {
               </Link>
             )}
             
-            <span className="nav-icon-link" title="Settings">⚙</span>
             <span className="nav-icon-link" title="Wishlist">♡</span>
             
             <Link 
