@@ -152,6 +152,22 @@
     ]
   },
   {
+    "ContainingType": "GameStore.Api.Controllers.OrderController",
+    "Method": "Checkout",
+    "RelativePath": "api/Order/checkout/{userId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "GameStore.Api.Controllers.ProfileController",
     "Method": "GetProfile",
     "RelativePath": "api/Profile/{userId}",

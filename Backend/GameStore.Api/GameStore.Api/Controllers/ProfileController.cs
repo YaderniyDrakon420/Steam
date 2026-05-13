@@ -25,14 +25,17 @@ public class ProfileController : ControllerBase
                 id = u.GameId,
                 title = u.Game.Title,
                 playTime = u.PlayTime,
-                lastPlayed = u.LastPlayed.ToString("yyyy-MM-dd"),
+                // Перевіряємо на null перед форматуванням
+                lastPlayed = u.LastPlayed.HasValue
+                    ? u.LastPlayed.Value.ToString("yyyy-MM-dd")
+                    : "Never played",
                 completedPct = 0,
                 coverUrl = u.Game.CoverImageUrl,
                 icons = new[] { "🎮" }
             })
             .ToListAsync();
 
-        return Ok(games); 
+        return Ok(games);
     }
 
     [HttpGet("{userId}/achievements")]
