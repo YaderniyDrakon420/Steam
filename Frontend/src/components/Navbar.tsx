@@ -199,7 +199,7 @@ export default function Navbar() {
       <style>{navStyles}</style>
       <nav className="navbar">
         <Link to="/" className="nav-logo">
-          ▼ <span>STORE</span>
+          <span>STORE</span>
         </Link>
         
         <div className="nav-links">
@@ -227,29 +227,37 @@ export default function Navbar() {
 
         <div className="nav-right">
           <div className="nav-icons">
-            {/* ИКОНКА ПРОФИЛЯ: показывается только если залогинен */}
+            {/* ТЕПЕР ПЕРЕВІРКА Є ДЛЯ ВСІХ ПРИВАТНИХ ІКОНОК */}
             {auth?.isAuthenticated && (
-              <Link 
-                to="/profile" 
-                className={`nav-icon-link ${location.pathname === "/profile" ? "active" : ""}`}
-                title="Profile"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-              </Link>
+              <>
+                <Link 
+                  to="/profile" 
+                  className={`nav-icon-link ${location.pathname === "/profile" ? "active" : ""}`}
+                  title="Profile"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                </Link>
+
+                <Link 
+                  to="/wishlist" 
+                  className={`nav-icon-link ${location.pathname === "/wishlist" ? "active" : ""}`} 
+                  title="Wishlist"
+                >
+                  ♡
+                </Link>
+
+                <Link 
+                  to="/cart" 
+                  className={`nav-icon-link ${location.pathname === "/cart" ? "active" : ""}`}
+                  title="Cart"
+                >
+                  🛒
+                </Link>
+              </>
             )}
-            
-            <span className="nav-icon-link" title="Wishlist">♡</span>
-            
-            <Link 
-              to="/cart" 
-              className={`nav-icon-link ${location.pathname === "/cart" ? "active" : ""}`}
-              title="Cart"
-            >
-              🛒
-            </Link>
           </div>
 
           {auth?.isAuthenticated ? (
@@ -261,8 +269,6 @@ export default function Navbar() {
               Sign in
             </Link>
           )}
-
-          <button className="nav-download">Download</button>
         </div>
       </nav>
     </>

@@ -1,6 +1,6 @@
 import { createContext, useState, type ReactNode } from "react";
 
-// 1. Описание интерфейса контекста
+// 1. Опис інтерфейсу контексту
 interface AuthContextType {
   isAuthenticated: boolean;
   userId: number | null;
@@ -8,12 +8,12 @@ interface AuthContextType {
   logout: () => void;
 }
 
-// 2. Создание самого контекста
+// 2. Створення самого контексту
 export const AuthContext = createContext<AuthContextType | null>(null);
 
-// 3. Провайдер, который управляет состоянием
+// 3. Провайдер, який керує станом
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // Пытаемся достать ID из localStorage сразу при загрузке, чтобы не вылетало при F5
+  // Намагаємося дістати ID з localStorage відразу при завантаженні
   const savedId = localStorage.getItem("userId");
   
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!savedId);
@@ -22,7 +22,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = (id: number) => {
     setUserId(id);
     setIsAuthenticated(true);
-    // В JS метод пишется с маленькой буквы: toString()
     localStorage.setItem("userId", id.toString()); 
   };
 

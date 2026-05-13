@@ -24,7 +24,7 @@ const css = `
 
   .section-title-main {
     font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 24px;
-    border-left: 3px solid #66c0f4; padding-left: 12px;
+    
   }
 
   .featured-news {
@@ -152,7 +152,7 @@ const css = `
   .footer-link:hover { color: #c6d4df; }
 `;
 
-// ==================== ДАННЫЕ ИГР СО ВСЕМИ КАРТИНКАМИ ====================
+// ==================== ДАННЫЕ ИГР СО ВСЕМИ КАРТИНКАМИ ==================== 
 const GAMES_DATA = [
   {
     id: 0,
