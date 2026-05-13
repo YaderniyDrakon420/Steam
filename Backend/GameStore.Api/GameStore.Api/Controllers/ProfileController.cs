@@ -1,5 +1,4 @@
-﻿ // Замени на твой реальный namespace контекста БД
-using GameStore.Infrastructure.Persistence;
+﻿using GameStore.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,7 +8,7 @@ namespace GameStore.Api.Controllers;
 [Route("api/[controller]")]
 public class ProfileController : ControllerBase
 {
-    private readonly GameStoreDbContext _context; // Тот самый _context, которого не хватало
+    private readonly GameStoreDbContext _context;
 
     public ProfileController(GameStoreDbContext context)
     {
@@ -33,7 +32,7 @@ public class ProfileController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(games); // Теперь Ok() будет существовать
+        return Ok(games); 
     }
 
     [HttpGet("{userId}/achievements")]
@@ -63,7 +62,7 @@ public class ProfileController : ControllerBase
             .Select(u => new {
                 nickname = u.Nickname,
                 email = u.Email,
-                avatarUrl = (string)null, // Если в БД нет аватара
+                avatarUrl = (string)null, 
                 level = u.UserLevel,
                 balance = u.Balance,
                 gamesCount = _context.UserLibrary.Count(ul => ul.UserId == userId),

@@ -20,7 +20,7 @@ public class CartController : ControllerBase
     {
         var cartItems = await _context.Carts
             .Where(c => c.UserId == userId)
-            .Include(c => c.Game) // Завантажуємо дані про гру
+            .Include(c => c.Game)
             .Select(c => new {
                 id = c.GameID,
                 title = c.Game.Title,
@@ -36,12 +36,21 @@ public class CartController : ControllerBase
     [HttpPost("{userId}/{gameId}")]
     public async Task<IActionResult> AddToCart(int userId, int gameId)
     {
-        // Перевіряємо, чи немає вже такої гри в кошику
-        var exists = await _context.Carts
+        // ПЕРЕВІРКА 1: Чи є гра вже в бібліотеці (куплена)
+        var isInLibrary = await _context.UserLibrary
+            .AnyAsync(ul => ul.UserId == userId && ul.GameId == gameId);
+
+        if (isInLibrary)
+            return BadRequest("Ця гра вже є у вашій бібліотеці. Ви не можете купити її вдруге.");
+
+        // ПЕРЕВІРКА 2: Чи немає вже такої гри в кошику
+        var isInCart = await _context.Carts
             .AnyAsync(c => c.UserId == userId && c.GameID == gameId);
 
-        if (exists) return BadRequest("Game already in cart");
+        if (isInCart)
+            return BadRequest("Гра вже додана до кошика.");
 
+        // Додавання
         var cartItem = new Cart { UserId = userId, GameID = gameId };
         _context.Carts.Add(cartItem);
         await _context.SaveChangesAsync();
