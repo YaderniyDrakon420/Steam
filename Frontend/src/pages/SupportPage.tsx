@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 
-// 1. ИНТЕРФЕЙСЫ
+// 1. ІНТЕРФЕЙСИ
 interface SupportCategory {
   id: number;
   title: string;
@@ -15,10 +15,11 @@ interface AccordionItemProps {
 
 interface PaginationProps {
   current: number;
+  total: number;
   onChange: (page: number) => void;
 }
 
-// Стили только для элементов страницы поддержки
+// Оновлені стилі
 const supportStyles = `
   .support-page { max-width: 780px; margin: 0 auto; padding: 40px 20px 60px; }
   .page-title { font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 20px; }
@@ -29,7 +30,7 @@ const supportStyles = `
   .search-input:focus { border-color: #66c0f4; }
   .search-input::placeholder { color: #5a6a7a; }
 
-  .accordion-list { margin-bottom: 32px; }
+  .accordion-list { margin-bottom: 32px; min-height: 400px; }
   .accordion-item { border-bottom: 1px solid rgba(255,255,255,0.07); }
   .accordion-item:first-child { border-top: 1px solid rgba(255,255,255,0.07); }
 
@@ -52,6 +53,31 @@ const supportStyles = `
   .accordion-body.open { opacity: 1; }
   .accordion-body-inner { padding: 0 4px 16px; font-size: 13px; color: #8f98a0; line-height: 1.6; }
 
+  /* ОНОВЛЕНО: justify-content: center для центрування */
+  .pagination { 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 4px; 
+    margin-top: 30px; 
+  }
+
+  .page-btn { 
+    background: #3d4450; 
+    color: #c6d4df; 
+    border: none; 
+    padding: 6px 12px; 
+    border-radius: 2px; 
+    cursor: pointer; 
+    font-size: 14px;
+    transition: background 0.2s, color 0.2s;
+  }
+  .page-btn:hover:not(:disabled) { background: #4d5565; color: #fff; }
+  .page-btn.active { background: #67c1f5; color: #fff; border-radius: 2px; }
+  .page-btn:disabled { color: #555; cursor: not-allowed; }
+  .prev-next { background: #2a303b; color: #67c1f5; }
+  .prev-next:hover:not(:disabled) { background: #3d4450; }
+
   .cta-block { text-align: center; padding: 40px 20px; border-top: 1px solid rgba(255,255,255,0.07); margin-top: 40px; }
   .cta-title { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 20px; }
   .cta-btn { background: linear-gradient(to bottom, #75b022, #588a1b); color: #d2e885; font-size: 14px; font-weight: 700; border: none; border-radius: 3px; padding: 13px 28px; cursor: pointer; }
@@ -63,6 +89,21 @@ const CATEGORIES: SupportCategory[] = [
   { id: 3, title: "My account", body: "Manage settings, change passwords, and enable two-factor authentication here." },
   { id: 4, title: "Client", body: "If the app is lagging, try clearing the cache or reinstalling the client." },
   { id: 5, title: "Community problems", body: "Report inappropriate behavior or appeal bans via the community portal." },
+  { id: 6, title: "Payment issues", body: "Check if your card supports international payments and has enough balance." },
+  { id: 7, title: "Steam Deck compatibility", body: "Most games work, but check the 'Verified' status on the product page." },
+  { id: 8, title: "DLC not appearing", body: "Try restarting the client and checking the 'Manage DLC' section in properties." },
+  { id: 9, title: "Family Sharing", body: "You can share your library with up to 5 accounts on 10 authorized devices." },
+  { id: 10, title: "Cloud Saves", body: "Make sure synchronization is enabled in the game settings to access saves on other PCs." },
+  { id: 11, title: "Privacy settings", body: "You can hide your library or playtime in the Profile Edit section." },
+  { id: 12, title: "Gifting games", body: "You can send games as gifts to friends in the same region as you." },
+  { id: 13, title: "Beta branches", body: "Right-click the game > Properties > Betas to try upcoming updates." },
+  { id: 14, title: "Voice chat problems", body: "Check your microphone privacy settings in Windows/macOS and client settings." },
+  { id: 15, title: "Account stolen?", body: "Use the recovery form immediately to lock your account and verify ownership." },
+  { id: 16, title: "In-game overlay", body: "Shift+Tab opens the overlay. If it doesn't work, check if it's enabled in settings." },
+  { id: 17, title: "Adding friends", body: "To add friends, your account must have spent at least $5 or equivalent." },
+  { id: 18, title: "Controller support", body: "The client supports Xbox, PlayStation, and Nintendo Switch Pro controllers." },
+  { id: 19, title: "Changing region", body: "Region can only be changed by completing a purchase with a local payment method." },
+  { id: 20, title: "Workshop mods", body: "Subscribing to a mod will automatically download and install it for your game." },
 ];
 
 function AccordionItem({ item, isOpen, onToggle }: AccordionItemProps) {
@@ -87,15 +128,35 @@ function AccordionItem({ item, isOpen, onToggle }: AccordionItemProps) {
   );
 }
 
-function Pagination({ current, onChange }: PaginationProps) {
-  const pages = [1, 2, 3, 4, 5];
+function Pagination({ current, total, onChange }: PaginationProps) {
+  const pages = Array.from({ length: total }, (_, i) => i + 1);
   return (
     <div className="pagination">
-      <button className="page-btn" disabled={current === 1} onClick={() => onChange(current - 1)}>‹ Prev</button>
+      <button 
+        className="page-btn prev-next" 
+        disabled={current === 1} 
+        onClick={() => onChange(current - 1)}
+      >
+        ‹ Prev
+      </button>
+      
       {pages.map(p => (
-        <button key={p} className={`page-btn ${current === p ? "active" : ""}`} onClick={() => onChange(p)}>{p}</button>
+        <button 
+          key={p} 
+          className={`page-btn ${current === p ? "active" : ""}`} 
+          onClick={() => onChange(p)}
+        >
+          {p}
+        </button>
       ))}
-      <button className="page-btn" onClick={() => onChange(current + 1)}>Next ›</button>
+      
+      <button 
+        className="page-btn prev-next" 
+        disabled={current === total}
+        onClick={() => onChange(current + 1)}
+      >
+        Next ›
+      </button>
     </div>
   );
 }
@@ -104,12 +165,28 @@ export default function SupportPage() {
   const [openId, setOpenId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const itemsPerPage = 5; // Скільки питань на одній сторінці
 
+  // 1. Спочатку фільтруємо за пошуком
   const filtered = CATEGORIES.filter(c =>
     c.title.toLowerCase().includes(search.toLowerCase())
   );
 
+  // 2. Рахуємо кількість сторінок
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+
+  // 3. Відрізаємо потрібну частину масиву для поточної сторінки
+  const startIndex = (page - 1) * itemsPerPage;
+  const paginatedItems = filtered.slice(startIndex, startIndex + itemsPerPage);
+
   const toggle = (id: number) => setOpenId(prev => prev === id ? null : id);
+
+  // Скидаємо сторінку на 1 при пошуку
+  const handleSearchChange = (val: string) => {
+    setSearch(val);
+    setPage(1);
+    setOpenId(null);
+  };
 
   return (
     <div className="support-page">
@@ -121,13 +198,13 @@ export default function SupportPage() {
           className="search-input"
           placeholder="Find help"
           value={search}
-          onChange={e => { setSearch(e.target.value); setOpenId(null); }}
+          onChange={e => handleSearchChange(e.target.value)}
         />
       </div>
 
       <div className="accordion-list">
-        {filtered.length > 0 ? (
-          filtered.map(item => (
+        {paginatedItems.length > 0 ? (
+          paginatedItems.map(item => (
             <AccordionItem
               key={item.id}
               item={item}
@@ -140,7 +217,13 @@ export default function SupportPage() {
         )}
       </div>
 
-      <Pagination current={page} onChange={setPage} />
+      {totalPages > 1 && (
+        <Pagination 
+          current={page} 
+          total={totalPages} 
+          onChange={(p) => { setPage(p); setOpenId(null); }} 
+        />
+      )}
 
       <div className="cta-block">
         <h2 className="cta-title">Have any other questions?</h2>

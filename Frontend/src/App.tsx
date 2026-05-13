@@ -1,45 +1,51 @@
+import { useContext } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { AuthContext } from "./context/AuthContext"; 
+
+// Імпорт компонентів
 import Navbar from "./components/Navbar"; 
-import Footer from "./components/Footer"; // Импортируем новый стилизованный футер
+import Footer from "./components/Footer"; 
+import SteamAuth from "./components/SteamAuth";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+
+// Імпорт сторінок
+import StorePage from "./pages/StorePage";
 import ProfilePage from "./pages/ProfilePage";
 import NewsPage from "./pages/News";
 import SupportPage from "./pages/SupportPage";
-import SteamAuth from "./components/SteamAuth";
-import StorePage from "./pages/StorePage";
 import CartPage from "./pages/CartPage";
 import GameDetailsPage from "./pages/GameDetailsPage";
 import UserAchievementsPage from "./pages/UserAchievementsPage";
-import { ProtectedRoute } from "./components/ProtectedRoute";
+import WishlistPage from "./pages/WishlistPage"; 
 
 function App() {
+  // Хуки можна використовувати ТІЛЬКИ всередині компонента
+  const auth = useContext(AuthContext);
+  
+  // Отримуємо ID з контексту, або як запасний варіант з localStorage
+  const currentUserId = auth?.userId || (localStorage.getItem("userId") ? parseInt(localStorage.getItem("userId")!) : null);
+
   return (
     <Router>
       <div style={{ 
         display: "flex", 
         flexDirection: "column", 
         minHeight: "100vh", 
-        background: "#1b2838", // Темно-синий оттенок Steam
+        background: "#1b2838", 
         color: "#c6d4df" 
       }}>
-        {/* Навигация зафиксирована сверху */}
         <Navbar /> 
         
-        {/* Контент страницы */}
         <main style={{ flex: 1 }}>
           <Routes>
-            {/* ГЛАВНАЯ СТРАНИЦА МАГАЗИНА */}
+            {/* Публічні маршрути */}
             <Route path="/" element={<StorePage />} />
-
-            {/* СТРАНИЦА КОНКРЕТНОЙ ИГРЫ */}
             <Route path="/game/:id" element={<GameDetailsPage />} />
-            
-            {/* Публичные маршруты */}
             <Route path="/news" element={<NewsPage />} />
             <Route path="/support" element={<SupportPage />} />
             <Route path="/auth" element={<SteamAuth />} />
-            <Route path="/profile/:userId/achievements" element={<UserAchievementsPage />} />
             
-            {/* ЗАЩИЩЕННЫЕ МАРШРУТЫ */}
+            {/* Захищені маршрути */}
             <Route 
               path="/profile" 
               element={
@@ -49,6 +55,8 @@ function App() {
               } 
             />
             
+            <Route path="/profile/:userId/achievements" element={<UserAchievementsPage />} />
+
             <Route 
               path="/cart" 
               element={
@@ -57,10 +65,19 @@ function App() {
                 </ProtectedRoute>
               } 
             />
+
+            <Route 
+              path="/wishlist" 
+              element={
+                <ProtectedRoute>
+                  {/* Передаємо userId у WishlistPage */}
+                  <WishlistPage userId={currentUserId} />
+                </ProtectedRoute>
+              } 
+            />
           </Routes>
         </main>
 
-        {/* Стилизованный футер (теперь с иконками и лого Valve) */}
         <Footer />
       </div>
     </Router>
