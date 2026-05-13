@@ -1,10 +1,12 @@
 import { useState, useEffect, useContext } from "react";
-import { AuthContext } from "../context/AuthContext"; // Импортируем контекст
+import { useNavigate } from "react-router-dom"; // Добавлен useNavigate
+import { AuthContext } from "../context/AuthContext";
 
 // 1. ОПИСАНИЕ ТИПОВ
 interface Achievement {
   id: number;
   title: string;
+  description?: string; // Добавлено описание из БД
   rarityPct: number;
   iconUrl: string | null;
   unlocked: boolean;
@@ -50,19 +52,27 @@ const css = `
   .profile-stats { display: flex; gap: 28px; flex-wrap: wrap; }
   .stat-num { font-size: 20px; font-weight: 700; color: #fff; }
   .stat-label { font-size: 11px; color: #8f98a0; margin-top: 2px; }
-  .balance-chip {
-    position: absolute; bottom: 52px; right: 16px;
-    background: #1e3a1e; border: 1px solid #3a6a3a;
-    border-radius: 3px; padding: 4px 10px;
-    font-size: 12px; color: #75b022; font-weight: 700;
-  }
-  .edit-btn {
-    position: absolute; bottom: 16px; right: 16px;
-    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 3px; color: #8f98a0; font-size: 11px; padding: 5px 10px; cursor: pointer;
-  }
+  
   .section { margin-bottom: 32px; }
-  .section-title { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 16px; }
+  .section-header-flex { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 16px; 
+  }
+  .section-title { font-size: 18px; font-weight: 700; color: #fff; margin: 0; }
+  
+  .show-more-link {
+    background: none;
+    border: none;
+    color: #66c0f4;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s;
+  }
+  .show-more-link:hover { color: #fff; }
+
   .achievements-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 12px; }
   .achievement-card { text-align: center; }
   .achievement-img {
@@ -71,8 +81,9 @@ const css = `
     font-size: 26px; border: 1px solid rgba(255,255,255,0.07); overflow: hidden;
   }
   .achievement-img img { width: 100%; height: 100%; object-fit: cover; }
-  .achievement-name { font-size: 11px; color: #c6d4df; margin-bottom: 2px; }
+  .achievement-name { font-size: 11px; color: #c6d4df; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .achievement-rarity { font-size: 10px; color: #8f98a0; }
+  
   .games-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .game-card { background: #16202d; border-radius: 4px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
   .game-cover { width: 100%; height: 110px; object-fit: cover; display: block; }
@@ -84,7 +95,6 @@ const css = `
   .status-screen { display: flex; height: 50vh; align-items: center; justify-content: center; color: #8f98a0; }
 `;
 
-// Базовый URL теперь без ID в конце
 const API_BASE_URL = "https://localhost:7190/api/Profile";
 
 function ProfileHeader({ user }: { user: User }) {
@@ -108,18 +118,27 @@ function ProfileHeader({ user }: { user: User }) {
           </div>
         </div>
       </div>
-      <div className="balance-chip">$ {user.balance.toFixed(2)}</div>
-      <button className="edit-btn">Edit profile</button>
     </div>
   );
 }
 
-function AchievementsSection({ items }: { items: Achievement[] }) {
+function AchievementsSection({ items, userId }: { items: Achievement[], userId: string | number }) {
+  const navigate = useNavigate();
+
   return (
     <div className="section">
-      <h2 className="section-title">Achievements</h2>
+      <div className="section-header-flex">
+        <h2 className="section-title">Achievements</h2>
+        <button 
+          className="show-more-link" 
+          onClick={() => navigate(`/profile/${userId}/achievements`)}
+        >
+          Show more →
+        </button>
+      </div>
       <div className="achievements-grid">
-        {items.map((a: Achievement) => (
+        {/* Показываем только первые 8 достижений в качестве превью */}
+        {items.slice(0, 8).map((a: Achievement) => (
           <div key={a.id} className="achievement-card">
             <div className="achievement-img">
               {a.iconUrl ? <img src={a.iconUrl} alt={a.title} /> : "🏆"}
@@ -133,7 +152,7 @@ function AchievementsSection({ items }: { items: Achievement[] }) {
   );
 }
 
-function GameCard({ game }: { game: Game }) {
+function GameCardItem({ game }: { game: Game }) {
   return (
     <div className="game-card">
       <img className="game-cover" src={game.coverUrl || "https://via.placeholder.com/200x110"} alt={game.title} />
@@ -157,12 +176,10 @@ export default function ProfilePage() {
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Достаем ID текущего пользователя из контекста
   const auth = useContext(AuthContext);
   const userId = auth?.userId;
 
   useEffect(() => {
-    // Если пользователь не авторизован (ID нет), не делаем запрос
     if (!userId) {
       setLoading(false);
       return;
@@ -170,7 +187,6 @@ export default function ProfilePage() {
 
     const loadData = async () => {
       try {
-        // Параллельно загружаем профиль, игры и достижения по динамическому ID
         const [uRes, gRes, aRes] = await Promise.all([
           fetch(`${API_BASE_URL}/${userId}`),
           fetch(`${API_BASE_URL}/${userId}/games`),
@@ -194,11 +210,10 @@ export default function ProfilePage() {
     };
 
     loadData();
-  }, [userId]); // Перезагружаем данные, если userId изменится
+  }, [userId]);
 
   if (loading) return <div className="status-screen"><style>{css}</style>Loading Profile...</div>;
   
-  // Если не залогинен или возникла ошибка
   if (!userId || !user) return (
     <div className="status-screen">
       <style>{css}</style>
@@ -209,12 +224,19 @@ export default function ProfilePage() {
   return (
     <div className="profile-page">
       <style>{css}</style>
+      
       <ProfileHeader user={user} />
-      {achievements.length > 0 && <AchievementsSection items={achievements} />}
+      
+      {achievements.length > 0 && (
+        <AchievementsSection items={achievements} userId={userId} />
+      )}
+      
       <div className="section">
-        <h2 className="section-title">Game Collection ({games.length})</h2>
+        <h2 className="section-title" style={{ marginBottom: '16px' }}>
+          Game Collection ({games.length})
+        </h2>
         <div className="games-grid">
-          {games.map((g: Game) => <GameCard key={g.id} game={g} />)}
+          {games.map((g: Game) => <GameCardItem key={g.id} game={g} />)}
         </div>
       </div>
     </div>
