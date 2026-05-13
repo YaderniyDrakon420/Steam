@@ -11,8 +11,6 @@ public class AuthController : ControllerBase
 {
     private readonly GameStoreDbContext _context;
     private readonly IHashHelper _hashHelper;
-
-    // Внедряем хелпер через конструктор
     public AuthController(GameStoreDbContext context, IHashHelper hashHelper)
     {
         _context = context;
@@ -22,18 +20,13 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] User user)
     {
-        // 1. Проверяем, не занят ли Email
         if (await _context.Users.AnyAsync(u => u.Email == user.Email))
             return BadRequest(new { message = "Пользователь с таким Email уже есть" });
 
-        // 2. ХЕШИРУЕМ ПАРОЛЬ перед сохранением
         user.PasswordHash = _hashHelper.Hash(user.PasswordHash);
-
-        // 3. Устанавливаем дефолтные значения
         user.CreatedAt = DateTime.UtcNow;
         user.UserLevel = 1;
         user.Balance = 0;
-
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
