@@ -501,12 +501,94 @@
             "type": "string",
             "nullable": true
           },
+          "screenshots": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GameScreenshot"
+            },
+            "nullable": true
+          },
+          "requirements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GameRequirement"
+            },
+            "nullable": true
+          },
+          "reviews": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Review"
+            },
+            "nullable": true
+          },
           "achievements": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Achievement"
             },
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GameRequirement": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "gameId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isRecommended": {
+            "type": "boolean"
+          },
+          "os": {
+            "type": "string",
+            "nullable": true
+          },
+          "processor": {
+            "type": "string",
+            "nullable": true
+          },
+          "memory": {
+            "type": "string",
+            "nullable": true
+          },
+          "graphics": {
+            "type": "string",
+            "nullable": true
+          },
+          "storage": {
+            "type": "string",
+            "nullable": true
+          },
+          "game": {
+            "$ref": "#/components/schemas/Game"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GameScreenshot": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "gameId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "url": {
+            "type": "string",
+            "nullable": true
+          },
+          "game": {
+            "$ref": "#/components/schemas/Game"
           }
         },
         "additionalProperties": false
@@ -521,6 +603,41 @@
           "password": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Review": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "gameId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "userId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isPositive": {
+            "type": "boolean"
+          },
+          "content": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "game": {
+            "$ref": "#/components/schemas/Game"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
           }
         },
         "additionalProperties": false

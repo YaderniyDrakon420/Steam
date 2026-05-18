@@ -16,6 +16,9 @@ public class GameStoreDbContext : DbContext
     public DbSet<Wishlist> Wishlists { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderDetail> OrderDetails { get; set; }
+    public DbSet<GameScreenshot> GameScreenshots { get; set; }
+    public DbSet<GameRequirement> GameRequirements { get; set; }
+    public DbSet<Review> Reviews { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -48,5 +51,32 @@ public class GameStoreDbContext : DbContext
         // Составной ключ для OrderDetails (OrderId + GameId)
         modelBuilder.Entity<OrderDetail>()
             .HasKey(od => new { od.OrderId, od.GameId });
+
+        modelBuilder.Entity<GameScreenshot>()
+        .HasOne(s => s.Game)
+        .WithMany(g => g.Screenshots)
+        .HasForeignKey(s => s.GameId)
+        .OnDelete(DeleteBehavior.Cascade); // Если удалить игру, удалятся и её скриншоты
+
+        // Связь: Системные требования -> Игра (Один-ко-многим)
+        modelBuilder.Entity<GameRequirement>()
+            .HasOne(r => r.Game)
+            .WithMany(g => g.Requirements)
+            .HasForeignKey(r => r.GameId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Связь: Отзывы -> Игра (Один-ко-многим)
+        modelBuilder.Entity<Review>()
+            .HasOne(r => r.Game)
+            .WithMany(g => g.Reviews)
+            .HasForeignKey(r => r.GameId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Связь: Отзывы -> Пользователь (Один-ко-многим)
+        modelBuilder.Entity<Review>()
+            .HasOne(r => r.User)
+            .WithMany() // Если у тебя в классе User нет коллекции Reviews, оставляем пустым
+            .HasForeignKey(r => r.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
