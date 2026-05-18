@@ -16,5 +16,8 @@ public class Game
     public string? CoverImageUrl { get; set; }
     public string? HeaderImageUrl { get; set; }
 
+    public virtual ICollection<GameScreenshot> Screenshots { get; set; } = new List<GameScreenshot>();
+    public virtual ICollection<GameRequirement> Requirements { get; set; } = new List<GameRequirement>();
+    public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
     public ICollection<Achievement> Achievements { get; set; } = new List<Achievement>();
 }

@@ -1,7 +1,8 @@
 ﻿using GameStore.Application.Interfaces;
 using GameStore.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace GameStore.Api.Controllers;
 
@@ -26,18 +27,19 @@ public class GamesController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<Game>> GetGame(int id)
     {
+        // Репозиторий вернет игру сразу со всеми скриншотами, требованиями и отзывами
         var game = await _gameRepository.GetByIdAsync(id);
 
         if (game == null)
         {
-            return NotFound();
+            return NotFound(new { message = "Game not found" });
         }
 
         return Ok(game);
     }
 
     [HttpGet("search")]
-    public async Task<ActionResult<IEnumerable<Game>>> Search(string query)
+    public async Task<ActionResult<IEnumerable<Game>>> Search([FromQuery] string query)
     {
         var results = await _gameRepository.SearchGamesAsync(query);
         return Ok(results);
