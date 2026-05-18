@@ -110,7 +110,7 @@ const css = `
   .thankyou-message p { margin-bottom: 12px; }
 `;
 
-// ==================== ИНТЕРФЕЙСЫ ====================
+// ==================== ІНТЕРФЕЙСИ ====================
 interface Game {
   id: number;
   title: string;
@@ -120,10 +120,11 @@ interface Game {
   image: string | null;
 }
 
-const API_BASE_URL = "https://localhost:7190/api"; // ЗАМІНИ НА СВІЙ ПОРТ
+const API_BASE_URL = "https://localhost:7190/api";
+
 const getUserId = () => {
   const savedId = localStorage.getItem("userId");
-  return savedId ? parseInt(savedId) : 5; // Повертає 5 за замовчуванням, якщо ніхто не "увійшов"
+  return savedId ? parseInt(savedId) : 5;
 };
 
 // ==================== СТРАНИЦА "СПАСИБО" ====================
@@ -157,25 +158,23 @@ const PaymentPage: React.FC<PaymentProps> = ({ cartItems, onPlaceOrder, onBackTo
   const [cvv, setCvv] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const subtotal = cartItems.reduce((sum: number, item: Game) => sum + item.price, 0);
   const tax = subtotal * 0.05;
   const total = subtotal + tax;
 
   // --- МАСКИ ВВОДУ ---
-
   const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\D/g, ""); // Тільки цифри
+    let value = e.target.value.replace(/\D/g, "");
     if (value.length > 16) value = value.slice(0, 16);
-    // Додаємо пробіли кожні 4 цифри
     const formatted = value.match(/.{1,4}/g)?.join(" ") || "";
     setCardNumber(formatted);
   };
 
   const handleExpirationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\D/g, ""); // Тільки цифри
+    let value = e.target.value.replace(/\D/g, "");
     if (value.length > 4) value = value.slice(0, 4);
-    
     if (value.length >= 3) {
       setExpiration(`${value.slice(0, 2)}/${value.slice(2)}`);
     } else {
@@ -194,22 +193,11 @@ const PaymentPage: React.FC<PaymentProps> = ({ cartItems, onPlaceOrder, onBackTo
   };
 
   // --- ВАЛІДАЦІЯ ---
-
   const validate = () => {
     let e: { [key: string]: string } = {};
-
-    // Валідація номера (Алгоритм Луна тут не додаємо для простоти, але довжину перевіряємо суворо)
     const rawCard = cardNumber.replace(/\s/g, "");
-    if (rawCard.length !== 16) {
-      e.cardNumber = "Card number must be 16 digits";
-    }
-
-    // Валідація імені
-    if (nameOnCard.trim().length < 3) {
-      e.nameOnCard = "Full name is required (min 3 chars)";
-    }
-
-    // Валідація дати (Термін дії)
+    if (rawCard.length !== 16) e.cardNumber = "Card number must be 16 digits";
+    if (nameOnCard.trim().length < 3) e.nameOnCard = "Full name is required (min 3 chars)";
     if (!/^\d{2}\/\d{2}$/.test(expiration)) {
       e.expiration = "Format MM/YY";
     } else {
@@ -217,32 +205,38 @@ const PaymentPage: React.FC<PaymentProps> = ({ cartItems, onPlaceOrder, onBackTo
       const now = new Date();
       const currentMonth = now.getMonth() + 1;
       const currentYear = parseInt(now.getFullYear().toString().slice(-2));
-
-      if (month < 1 || month > 12) {
-        e.expiration = "Invalid month";
-      } else if (year < currentYear || (year === currentYear && month < currentMonth)) {
-        e.expiration = "Card has expired";
-      }
+      if (month < 1 || month > 12) e.expiration = "Invalid month";
+      else if (year < currentYear || (year === currentYear && month < currentMonth)) e.expiration = "Card has expired";
     }
-
-    // Валідація CVV
-    if (cvv.length !== 3) {
-      e.cvv = "3 digits required";
-    }
-
-    // Згода з правилами
-    if (!agreeTerms) {
-      e.agreeTerms = "Required";
-    }
-
+    if (cvv.length !== 3) e.cvv = "3 digits required";
+    if (!agreeTerms) e.agreeTerms = "Required";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validate()) {
-      onPlaceOrder();
+    if (validate() && !isProcessing) {
+      setIsProcessing(true);
+      try {
+        const userId = getUserId();
+        const response = await fetch(`${API_BASE_URL}/Order/checkout/${userId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (response.ok) {
+          onPlaceOrder(); // Викликаємо зміну сторінки на ThankYou
+        } else {
+          const errorMsg = await response.text();
+          alert("Checkout failed: " + errorMsg);
+        }
+      } catch (err) {
+        console.error("Order error:", err);
+        alert("Server error during checkout");
+      } finally {
+        setIsProcessing(false);
+      }
     }
   };
 
@@ -251,7 +245,6 @@ const PaymentPage: React.FC<PaymentProps> = ({ cartItems, onPlaceOrder, onBackTo
       <style>{`
         .payment-section { max-width: 500px; margin: 0 auto; color: #c6d4df; }
         .payment-title { font-size: 24px; color: #fff; margin-bottom: 20px; font-weight: bold; }
-        
         .payment-methods { display: flex; gap: 10px; margin-bottom: 25px; }
         .payment-method { 
           flex: 1; background: #2a303b; padding: 12px; border-radius: 4px; 
@@ -260,7 +253,6 @@ const PaymentPage: React.FC<PaymentProps> = ({ cartItems, onPlaceOrder, onBackTo
         }
         .payment-method.selected { border-color: #66c0f4; background: #3d4450; }
         .payment-method img { height: 20px; }
-
         .card-details { background: #1b2838; padding: 20px; border-radius: 4px; margin-bottom: 20px; }
         .card-row { margin-bottom: 15px; position: relative; }
         .card-row label { display: block; font-size: 12px; text-transform: uppercase; margin-bottom: 5px; color: #8f98a0; }
@@ -270,20 +262,17 @@ const PaymentPage: React.FC<PaymentProps> = ({ cartItems, onPlaceOrder, onBackTo
         }
         .card-row input:focus { border-color: #66c0f4; }
         .row-2cols { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-
         .error-text { color: #ff4d4d; font-size: 11px; margin-top: 4px; display: block; }
         .input-error { border-color: #ff4d4d !important; }
-
         .order-summary { background: #1b2838; padding: 20px; border-radius: 4px; margin-bottom: 20px; }
         .summary-line { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; color: #acb2b8; }
-        .summary-total { display: flex; justify-content: space-between; font-size: 18px; color: #fff; font-weight: bold; border-top: 1px solid #333; pt: 10px; margin-top: 10px; }
-
+        .summary-total { display: flex; justify-content: space-between; font-size: 18px; color: #fff; font-weight: bold; border-top: 1px solid #333; padding-top: 10px; margin-top: 10px; }
         .place-order-btn { 
           width: 100%; background: linear-gradient(to bottom, #75b022, #588a1b); 
           color: #fff; border: none; padding: 15px; font-weight: bold; cursor: pointer; border-radius: 3px;
         }
-        .place-order-btn:hover { background: linear-gradient(to bottom, #8ed629, #6aa621); }
-        
+        .place-order-btn:hover:not(:disabled) { background: linear-gradient(to bottom, #8ed629, #6aa621); }
+        .place-order-btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .legal-text { margin-bottom: 20px; font-size: 13px; }
       `}</style>
 
@@ -380,7 +369,9 @@ const PaymentPage: React.FC<PaymentProps> = ({ cartItems, onPlaceOrder, onBackTo
           {errors.agreeTerms && <span className="error-text" style={{ marginLeft: 25 }}>{errors.agreeTerms}</span>}
         </div>
 
-        <button type="submit" className="place-order-btn">PLACE ORDER</button>
+        <button type="submit" className="place-order-btn" disabled={isProcessing}>
+          {isProcessing ? "PROCESSING..." : "PLACE ORDER"}
+        </button>
       </form>
 
       <button 
@@ -406,7 +397,7 @@ const CartPage: React.FC<CartProps> = ({ cartItems, onRemoveFromCart, onCheckout
     return (
       <div className="cart-section">
         <h1 className="cart-title">My Cart</h1>
-        <div className="empty-message">Your cart is empty</div>
+        <div className="empty-message" style={{ color: "#8f98a0", textAlign: "center", padding: "40px" }}>Your cart is empty</div>
       </div>
     );
   }
@@ -415,19 +406,23 @@ const CartPage: React.FC<CartProps> = ({ cartItems, onRemoveFromCart, onCheckout
     <div className="cart-section">
       <h1 className="cart-title">My Cart</h1>
       {cartItems.map(item => (
-        <div key={item.id} className="cart-item">
-          <div className="item-image">{item.image ? <img src={item.image} alt="" /> : "Image"}</div>
-          <div className="item-info">
-            <div className="item-title">Base Game<br />{item.title}</div>
+        <div key={item.id} className="cart-item" style={{ display: "flex", background: "#1b2838", marginBottom: "10px", padding: "15px", borderRadius: "4px" }}>
+          <div className="item-image" style={{ width: "120px", height: "60px", background: "#000", marginRight: "15px" }}>
+            {item.image ? <img src={item.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "Image"}
+          </div>
+          <div className="item-info" style={{ flex: 1 }}>
+            <div className="item-title" style={{ color: "#fff", fontWeight: "bold" }}>Base Game<br />{item.title}</div>
             <div className="item-actions">
-              <button className="item-action" onClick={() => onRemoveFromCart(item.id)}>Remove</button>
+              <button className="item-action" onClick={() => onRemoveFromCart(item.id)} style={{ background: "none", border: "none", color: "#66c0f4", padding: 0, cursor: "pointer", textDecoration: "underline", fontSize: "12px" }}>Remove</button>
             </div>
           </div>
-          <div className="item-price">UAH {item.price.toFixed(2)}</div>
+          <div className="item-price" style={{ color: "#fff" }}>UAH {item.price.toFixed(2)}</div>
         </div>
       ))}
-      <div className="cart-total"><span>Total:</span><span>UAH {total.toFixed(2)}</span></div>
-      <button className="checkout-btn" onClick={onCheckout}>Check Out</button>
+      <div className="cart-total" style={{ display: "flex", justifySelf: "flex-end", justifyContent: "space-between", color: "#fff", fontSize: "20px", padding: "20px 0" }}>
+        <span>Total:</span><span>UAH {total.toFixed(2)}</span>
+      </div>
+      <button className="checkout-btn" onClick={onCheckout} style={{ width: "100%", background: "#66c0f4", color: "#1b2838", border: "none", padding: "15px", fontWeight: "bold", cursor: "pointer", borderRadius: "4px" }}>Check Out</button>
     </div>
   );
 };
@@ -435,70 +430,66 @@ const CartPage: React.FC<CartProps> = ({ cartItems, onRemoveFromCart, onCheckout
 // ==================== ГЛАВНЫЙ КОМПОНЕНТ ====================
 export default function App() {
   const [page, setPage] = useState<string>("cart");
-  const [cartItems, setCartItems] = useState<Game[]>([]); // КОРЗИНА ПОРОЖНЯ ПРИ СТАРТІ
+  const [cartItems, setCartItems] = useState<Game[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // ЗАВАНТАЖЕННЯ КОРЗИНИ З БЕКЕНДУ
-const fetchCart = async () => {
-  try {
-    const currentUserId = getUserId(); // Отримуємо ID тут
-    const response = await fetch(`${API_BASE_URL}/Cart/${currentUserId}`);
-    
-    if (response.ok) {
-      const data = await response.json();
-      setCartItems(data);
+  const fetchCart = async () => {
+    try {
+      const currentUserId = getUserId();
+      const response = await fetch(`${API_BASE_URL}/Cart/${currentUserId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setCartItems(data);
+      }
+    } catch (error) {
+      console.error("Fetch error:", error);
+    } finally {
+      setIsLoading(false);
     }
-  } catch (error) {
-    console.error("Fetch error:", error);
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   useEffect(() => {
     fetchCart();
   }, []);
 
-  // ВИДАЛЕННЯ З БЕКЕНДУ
- const removeFromCart = async (gameId: number) => {
-  try {
-    const currentUserId = getUserId(); // І тут теж
-    const response = await fetch(`${API_BASE_URL}/Cart/${currentUserId}/${gameId}`, {
-      method: "DELETE",
-    });
-    
-    if (response.ok) {
-      setCartItems(prev => prev.filter(i => i.id !== gameId));
+  const removeFromCart = async (gameId: number) => {
+    try {
+      const currentUserId = getUserId();
+      const response = await fetch(`${API_BASE_URL}/Cart/${currentUserId}/${gameId}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        setCartItems(prev => prev.filter(i => i.id !== gameId));
+      }
+    } catch (error) {
+      console.error("Delete error:", error);
     }
-  } catch (error) {
-    console.error("Delete error:", error);
-  }
-};
+  };
 
   if (isLoading) return <div style={{ color: "#fff", textAlign: "center", padding: 50 }}>Loading...</div>;
 
   return (
-    <>
-      <style>{css}</style>
-      <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-        <div className="content">
-          {page === "cart" && (
-            <CartPage 
-              cartItems={cartItems} 
-              onRemoveFromCart={removeFromCart} 
-              onCheckout={() => setPage("payment")} 
-            />
-          )}
-          {page === "payment" && (
-            <PaymentPage 
-              cartItems={cartItems} 
-              onPlaceOrder={() => { setCartItems([]); setPage("thankyou"); }} 
-              onBackToCart={() => setPage("cart")} 
-            />
-          )}
-          {page === "thankyou" && <ThankYouPage onBrowseShop={() => setPage("cart")} />}
-        </div>
+    <div style={{ background: "#1b2838", minHeight: "100vh", padding: "20px" }}>
+      <div className="content" style={{ maxWidth: "800px", margin: "0 auto" }}>
+        {page === "cart" && (
+          <CartPage 
+            cartItems={cartItems} 
+            onRemoveFromCart={removeFromCart} 
+            onCheckout={() => setPage("payment")} 
+          />
+        )}
+        {page === "payment" && (
+          <PaymentPage 
+            cartItems={cartItems} 
+            onPlaceOrder={() => { 
+                setCartItems([]); // Очищаємо локальний стейт
+                setPage("thankyou"); 
+            }} 
+            onBackToCart={() => setPage("cart")} 
+          />
+        )}
+        {page === "thankyou" && <ThankYouPage onBrowseShop={() => setPage("cart")} />}
       </div>
-    </>
+    </div>
   );
 }
