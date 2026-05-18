@@ -108,6 +108,66 @@ const navStyles = `
     padding: 7px 14px; 
     cursor: pointer; 
   }
+
+  /* =========================================================================
+     МОБИЛЬНЫЙ АДАПТИВ НАВБАРА (Ширина 440px / iPhone 16 Pro Max)
+     ========================================================================= */
+  @media (max-width: 768px) {
+    .navbar {
+      padding: 0 12px;
+      gap: 10px;
+    }
+    
+    /* Скрываем подпись у логотипа, оставляем только иконку/первую букву V */
+    .nav-logo span {
+      display: none;
+    }
+    
+    /* Текстовые ссылки разделов (Store, Community и т.д.) скрываем */
+    .nav-links {
+      display: none;
+    }
+    
+    /* Поиск расширяется, чтобы занимать оптимальное пространство */
+    .search-wrapper {
+      max-width: 100%;
+      flex: 1;
+    }
+    
+    .nav-search {
+      padding: 6px 8px;
+      font-size: 13px;
+    }
+
+    /* Всплывающее окно поиска сужаем до ширины экрана смартфона */
+    .search-results-popup {
+      width: calc(100vw - 24px);
+      left: -40px; /* Сдвигаем влево для центровки на мобилках */
+    }
+    
+    .search-result-item img {
+      width: 80px;
+      height: 35px;
+    }
+    
+    .search-result-name {
+      font-size: 12px;
+    }
+
+    .nav-right {
+      gap: 10px;
+    }
+
+    /* Уменьшаем кнопку скачивания до компактного значка или убираем текст */
+    .nav-download {
+      padding: 6px 10px;
+      font-size: 11px;
+    }
+    
+    .nav-icons {
+      gap: 8px;
+    }
+  }
 `;
 
 function SearchBar() {

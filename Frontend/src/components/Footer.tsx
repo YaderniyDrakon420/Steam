@@ -92,6 +92,62 @@ const footerStyles = `
     width: 35px;
     filter: invert(1);
   }
+
+  /* =========================================================================
+     МОБИЛЬНЫЙ АДАПТИВ ФУТЕРА (Ширина 440px / iPhone 16 Pro Max)
+     ========================================================================= */
+  @media (max-width: 768px) {
+    .main-footer {
+      padding: 30px 0 40px 0;
+    }
+
+    .footer-container {
+      padding: 0 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .footer-text {
+      font-size: 11px;
+      line-height: 1.5;
+      margin-bottom: 20px;
+      padding: 0 5px;
+    }
+
+    /* Ссылки футера делаем крупнее, чтобы по ним было удобно тапать пальцем */
+    .footer-links {
+      gap: 12px 18px;
+      justify-content: center;
+      padding-top: 15px;
+      margin-bottom: 25px;
+    }
+
+    .footer-link {
+      font-size: 13px;
+    }
+
+    /* Самое важное изменение: отключаем абсолютное позиционирование для логотипов */
+    .valve-logo-wrap {
+      position: static;
+      transform: none;
+      flex-direction: row-reverse; /* Меняем порядок: кнопка наверх / логотип рядом */
+      justify-content: center;
+      width: 100%;
+      gap: 25px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 15px;
+    }
+
+    .btn-scroll-top {
+      width: 36px; /* Чуть увеличиваем кнопку скролла для мобилок */
+      height: 36px;
+    }
+
+    .valve-logo {
+      width: 32px;
+    }
+  }
 `;
 
 export default function Footer() {
